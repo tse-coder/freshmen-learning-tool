@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+body {
+	@apply min-h-screen bg-stone-950;
+}
+.bg-gradient-pattern {
+	background-image:
+		linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+	background-size: 32px 32px;
+}
+.mask-radial-fade {
+	mask-image: radial-gradient(circle at center, transparent 30%, black 90%);
+	--webkit-mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+	mask-composite: exclude;
+	-webkit-mask-composite: destination-out;
+}
+
+/* Custom scrollbar for horizontal carousels */
+.scrollbar-custom {
+	@apply [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-corner]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-track]:bg-transparent;
+}
+
+/*  [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:bg-gray-100  [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-corner]:hidden dark:[&::-webkit-scrollbar-track]:bg-slate-950 */
