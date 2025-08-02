@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	export const ssr = false;
 	let viewerRef: HTMLDivElement;
 
 	onMount(async () => {

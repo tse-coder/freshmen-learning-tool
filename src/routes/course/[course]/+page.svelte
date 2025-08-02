@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import type { PageData } from './$types';
+	import OverlayModal from '../../../components/OverlayModal.svelte';
 
 	export let data: PageData;
 
@@ -14,9 +15,37 @@
 		videos: false
 	};
 
+	let showOverlay = false;
+
 	function toggleSection(section: string) {
+		if (section === 'quizzes' || section === 'exams') {
+			showOverlay = true;
+			return;
+		}
 		openSections[section] = !openSections[section];
 		openSections = { ...openSections };
+	}
+
+	function closeOverlay() {
+		showOverlay = false;
+	}
+
+	function getResourceLink(section: string, resourceId: number): string {
+		if (section === 'videos') {
+			return `${course.name}/video-player/${resourceId}`;
+		} else if (section === 'modules' || section === 'shortNotes') {
+			return `/pdf-reader/${resourceId}`;
+		} else {
+			return `/course/${course.name}/${section}`;
+		}
+	}
+
+	function formatSectionName(section: string): string {
+		return section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1');
+	}
+
+	function handleResourceClick(section: string, id: number) {
+		window.location.href = getResourceLink(section, id);
 	}
 </script>
 
@@ -30,22 +59,27 @@
 				on:click={() => toggleSection(section)}
 				class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 text-lg font-semibold text-gray-200 backdrop-blur-md transition-all duration-300 hover:bg-white/10"
 			>
-				<span>{section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1')}</span>
-				<svg
-					class="h-6 w-6 transition-transform duration-300 {openSections[section]
-						? 'rotate-180'
-						: ''}"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M19 9l-7 7-7-7"
-					/>
-				</svg>
+				<span>{formatSectionName(section)}</span>
+
+				{#if section === 'quizzes' || section === 'exams'}
+					<span class="text-xl">🔒</span>
+				{:else}
+					<svg
+						class="h-6 w-6 transform transition-transform duration-300 {openSections[section]
+							? 'rotate-180'
+							: ''}"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M19 9l-7 7-7-7"
+						/>
+					</svg>
+				{/if}
 			</button>
 
 			{#if openSections[section]}
@@ -55,13 +89,16 @@
 				>
 					<div class="scrollbar-custom flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
 						{#each resources[section] as resource}
-							<a
-								href={section === 'video'
-									? `/player/${resource.id}`
-									: section === 'modules' || 'shortNotes'
-										? `/pdf-reader/${resource.id}`
-										: '#'}
-								class="w-60 shrink-0 snap-start rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl"
+							<div
+								role="button"
+								tabindex="0"
+								on:click={() => handleResourceClick(section, resource.id)}
+								on:keypress={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										handleResourceClick(section, resource.id);
+									}
+								}}
+								class="w-60 shrink-0 cursor-pointer snap-start rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl"
 							>
 								{#if section === 'videos'}
 									<img
@@ -72,15 +109,15 @@
 								{/if}
 								<h3 class="text-base font-semibold text-white">{resource.title}</h3>
 								<p class="text-sm text-gray-400">{resource.type}</p>
-							</a>
+							</div>
 						{/each}
 					</div>
 
 					<a
-						href="/course/{course.name}/{section}"
+						href={`/course/${course.name}/${section}`}
 						class="mt-4 block text-sm font-medium text-blue-400 hover:underline"
 					>
-						More {section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1')} →
+						More {formatSectionName(section)} →
 					</a>
 				</div>
 			{/if}
@@ -88,5 +125,9 @@
 	{/each}
 </div>
 
-<style>
-</style>
+{#if showOverlay}
+	<OverlayModal
+		onClose={closeOverlay}
+		message="This section is under development and will be available soon."
+	/>
+{/if}

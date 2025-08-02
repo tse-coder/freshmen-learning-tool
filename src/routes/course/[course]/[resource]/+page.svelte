@@ -14,15 +14,14 @@
 	const isExam = data.resourceType === 'exams';
 	const showTabs = isExam;
 
-	function playVideo(url: string) {
-		selectedVideo = url;
-	}
-
+	const onCategoryChange = (category: string) => {
+		activeCategory = category;
+	};
 	// Filter based on category (e.g., Mid/Final) or search
 	$: filteredResources = data.resources
 		.filter((r) => {
 			if (showTabs && activeCategory !== 'All') {
-				return r.category === activeCategory;
+				return r.type === activeCategory;
 			}
 			return true;
 		})
@@ -35,11 +34,15 @@
 	</h1>
 
 	<!-- Search -->
-	<SearchBar bind:value={searchQuery} placeholder="Search resources..." />
+	<SearchBar bind:value={searchQuery} place="search for {data.resourceType}..." />
 
 	<!-- Category Tabs (for Exams) -->
 	{#if showTabs}
-		<CategoryTabs categories={['All', 'Mid', 'Final']} bind:active={activeCategory} />
+		<CategoryTabs
+			categories={['All', 'Mid', 'Final']}
+			bind:active={activeCategory}
+			onChange={onCategoryChange}
+		/>
 	{/if}
 
 	<!-- Video Player (only for videos) -->
@@ -48,9 +51,5 @@
 	{/if}
 
 	<!-- Grid of Resources -->
-	<ResourceGrid
-		resources={filteredResources}
-		resourceType={data.resourceType}
-		on:videoSelect={(e) => playVideo(e.detail)}
-	/>
+	<ResourceGrid resources={filteredResources} />
 </div>

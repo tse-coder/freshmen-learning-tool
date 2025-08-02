@@ -21,6 +21,7 @@
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
+		"@types/youtube": "^0.1.2",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
@@ -31,6 +32,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-		"@pdftron/pdfjs-express-viewer": "^8.7.5"
+		"@pdftron/pdfjs-express-viewer": "^8.7.5",
+		"svelte-youtube-lite": "^1.2.1"
 	}
 }

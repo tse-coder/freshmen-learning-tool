@@ -87,7 +87,7 @@
 
 	<!-- Description -->
 	<div class="mb-12 text-center">
-		<h3 class="mb-2 text-xl font-semibold">Why Join UnivFreshman Hub?</h3>
+		<h3 class="mb-2 text-xl font-semibold">Why Join Fresh Hub?</h3>
 		<p class="text-gray-400">
 			Gain instant access to essential learning tools tailored for Ethiopian university freshmen.
 		</p>

@@ -3,6 +3,7 @@ export interface Resource {
 	title: string;
 	type: string;
 	url: string;
+	category?: string;
 }
 
 export interface VideoResource extends Resource {

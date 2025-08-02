@@ -33,13 +33,13 @@
 	<!-- Buttons -->
 	<div class="flex space-x-6">
 		<button
-			class="relative rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white shadow-md transition duration-300 hover:from-blue-700 hover:to-indigo-700"
+			class="relative cursor-pointer rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white shadow-md transition duration-300 hover:from-blue-700 hover:to-indigo-700"
 			on:click={() => goto('./signin')}
 		>
 			Log In
 		</button>
 		<button
-			class="relative rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-white backdrop-blur-md transition duration-300 hover:bg-white/20"
+			class="relative cursor-pointer rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-white backdrop-blur-md transition duration-300 hover:bg-white/20"
 			on:click={() => goto('./signup')}
 		>
 			Sign Up
