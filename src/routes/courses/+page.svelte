@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { courses } from '$lib/data/courses';
+	export let data;
+	const courses = data.courses;
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-6 text-white">
@@ -20,7 +21,7 @@
 				<button
 					class="mt-4 w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-2 font-semibold text-white transition duration-300 hover:from-blue-700 hover:to-indigo-700"
 					onclick={() => {
-						goto(`./course/${course.name}`);
+						goto(`./course/${course.id}`);
 					}}
 				>
 					View Resources

@@ -8,3 +8,4 @@ export interface Resource {
 	created_at?: string;
 	updated_at?: string;
 }
+export type ResourceType = 'module' | 'exam' | 'quiz' | 'shortNote';

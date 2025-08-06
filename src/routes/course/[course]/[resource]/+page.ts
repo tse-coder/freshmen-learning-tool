@@ -1,20 +1,19 @@
-// src/routes/course/[course]/[resource]/+page.ts
-import { resources } from '$lib/data/resources';
+import { fetchResources } from '../../../../api/fetcher';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = ({ params }) => {
-	const courseName = decodeURIComponent(params.course);
+	const courseId = decodeURIComponent(params.course);
 	const resourceType = decodeURIComponent(params.resource);
 
-	const courseResources = resources[courseName as keyof typeof resources];
+	const courseResources = fetchResources(courseId, resourceType);
 
 	if (!courseResources) {
-		throw new Error(`Course "${courseName}" not found.`);
+		throw new Error(`Course "${courseId}" not found.`);
 	}
 
 	const selectedResources = courseResources[resourceType as keyof typeof courseResources] ?? [];
 	return {
-		course: courseName,
+		course: courseId,
 		resourceType,
 		resources: selectedResources
 	};

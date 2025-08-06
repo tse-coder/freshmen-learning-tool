@@ -1,19 +1,26 @@
-// src/routes/course/[course]/+page.ts
-import { courses } from '$lib/data/courses';
-import { resources } from '$lib/data/resources';
-import type { LoadEvent } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
+import { fetchAllResources, fetchCourses } from '../../../api/fetcher';
 
-export function load({ params }: LoadEvent) {
-	const courseName = params.course ?? '';
-	const course = courses.find((c) => c.name === courseName);
-	const courseResources = resources[courseName];
+export const load: PageLoad = async ({ params }) => {
+	const courseId = params.course ?? '';
+	const courses = await fetchCourses();
 
-	if (!course || !courseResources) {
-		throw new Error(`Course "${courseName}" not found`);
+	if (!courses) {
+		throw new Error('Courses not loaded');
 	}
+
+	// Find the matching course
+	const course = courses.find((c) => c.id === courseId);
+
+	if (!course) {
+		throw new Error(`Course "${courseId}" not found`);
+	}
+
+	// Fetch resources for the course
+	const courseResources = await fetchAllResources(course.id);
 
 	return {
 		course,
 		resources: courseResources
 	};
-}
+};

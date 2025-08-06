@@ -1,0 +1,63 @@
+import type { Course } from '../types/types';
+
+export const fetchCourses = async (): Promise<Course[]> => {
+	try {
+		const res = await fetch('http://localhost:4000/courses');
+		if (!res.ok) throw new Error('Failed to fetch courses');
+		const courses = await res.json();
+
+		const coursesWithCounts: Course[] = await Promise.all(
+			courses.map(async (course: { id: string; name: string }) => {
+				const [modules, notes, videos] = await Promise.all([
+					fetchResources(course.id, 'module'),
+					fetchResources(course.id, 'shortNote'),
+					fetchResources(course.id, 'video')
+				]);
+
+				return {
+					id: course.id,
+					name: course.name,
+					modules: modules.length,
+					notes: notes.length,
+					videos: videos.length
+				};
+			})
+		);
+
+		return coursesWithCounts;
+	} catch (error) {
+		console.error('Error fetching courses with resource counts:', error);
+		return [];
+	}
+};
+
+export const fetchResources = async (courseId: string, type: string) => {
+	try {
+		const url = new URL('http://localhost:4000/resources');
+		url.searchParams.append('courseId', courseId);
+		url.searchParams.append('type', type);
+
+		const res = await fetch(url.toString());
+		if (!res.ok) throw new Error('Failed to fetch resources');
+		const data = await res.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching resources:', error);
+		return [];
+	}
+};
+
+export const fetchAllResources = async (courseId: string) => {
+	try {
+		const url = new URL('http://localhost:4000/resources');
+		url.searchParams.append('courseId', courseId);
+
+		const res = await fetch(url.toString());
+		if (!res.ok) throw new Error('Failed to fetch resources');
+		const data = await res.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching all resources:', error);
+		return [];
+	}
+};
