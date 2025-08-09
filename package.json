@@ -33,6 +33,8 @@
 	},
 	"dependencies": {
 		"@pdftron/pdfjs-express-viewer": "^8.7.5",
+		"pdfjs-dist": "^5.4.54",
+		"svelte-pdf-simple": "^2.0.0",
 		"svelte-youtube-lite": "^1.2.1"
 	}
 }

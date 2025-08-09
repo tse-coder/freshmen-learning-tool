@@ -1,12 +1,14 @@
-<script>
-	import { goto } from '$app/navigation';
+<script lang="ts">
+	import { PdfViewer } from 'svelte-pdf-simple';
 
 	export let data;
-	const { url, title } = data.resource;
-	goto(url, {
-		replaceState: true,
-		state: {
-			title: title || 'PDF Document'
-		}
-	});
+	const { resource } = data;
+	const url = resource.url;
+	let pdfProps = {
+		page: 1, // starting page
+		scale: 1.0, // zoom level
+		rotate: 0 // rotation degrees
+	};
 </script>
+
+<PdfViewer {url} props={pdfProps} />

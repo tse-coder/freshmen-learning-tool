@@ -31,11 +31,12 @@
 		showOverlay = false;
 	}
 
-	function getResourceLink(section: string, resourceId: number): string {
+	function getResourceLink(section: string, resourceId: string): string {
 		if (section === 'video') {
 			return `${course.id}/video-player/${resourceId}`;
 		} else if (section === 'module' || section === 'shortNote') {
 			return `${course.id}/pdf-reader/${resourceId}`;
+			// return resources.find((r: Resource) => r.id === resourceId)?.url;
 		} else {
 			return `/course/${course.id}/${section}`;
 		}
@@ -45,7 +46,7 @@
 		return section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1');
 	}
 
-	function handleResourceClick(section: string, id: number) {
+	function handleResourceClick(section: string, id: string) {
 		window.location.href = getResourceLink(section, id);
 	}
 

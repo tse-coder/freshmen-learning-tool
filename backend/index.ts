@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import courseRoutes from './routes/courses.ts';
 import resourceRoutes from './routes/resources.ts';
+import bot from './controllers/bot.ts';
 
 dotenv.config();
 const app = express();
