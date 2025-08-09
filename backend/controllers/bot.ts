@@ -13,7 +13,7 @@ bot.start((ctx) => {
 				[
 					{
 						text: 'Open Mini App',
-						web_app: { url: 'https://watch-box-pi.vercel.app' }
+						web_app: { url: 'https://freshman-learning-tool.vercel.app' }
 					}
 				]
 			]
