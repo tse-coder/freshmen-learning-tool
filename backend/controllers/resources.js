@@ -1,9 +1,6 @@
-import { supabase } from '../supabase/client.ts';
+import { supabase } from '../supabase/client.js';
 
-export const getResourcesByCourseIdandType = async (
-	courseId: string,
-	type: 'module' | 'exam' | 'quiz' | 'shortNote'
-) => {
+export const getResourcesByCourseIdandType = async (courseId, type) => {
 	const { data, error } = await supabase
 		.from('resources')
 		.select('*')
@@ -13,8 +10,8 @@ export const getResourcesByCourseIdandType = async (
 	return data;
 };
 
-export const getAllResourcesByCourseId = async (courseId: string) => {
+export const getAllResourcesByCourseId = async (courseId) => {
 	const { data, error } = await supabase.from('resources').select('*').eq('course_id', courseId);
 	if (error) throw error;
-	return data
+	return data;
 };

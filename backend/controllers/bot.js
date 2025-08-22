@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const token = process.env.TELEGRAM_BOT_TOKEN!;
+const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new Telegraf(token);
 
 bot.start((ctx) => {
@@ -13,7 +13,7 @@ bot.start((ctx) => {
 				[
 					{
 						text: 'Open Mini App',
-						web_app: { url: 'https://watch-box-pi.vercel.app' }
+						web_app: { url: 'https://freshmen-tool.vercel.app' }
 					}
 				]
 			]
