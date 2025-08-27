@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
 		const courses = await getCourses();
 		res.json(courses);
 	} catch (err) {
-		res.status(500).json({ error: 'Failed to fetch courses' });
+		res.status(500).json({ error: err.message });
 	}
 });
 
