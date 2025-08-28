@@ -1,10 +1,10 @@
 import type { Resource } from '../../../../../types/types.js';
-import { fetchAllResources } from '../../../../../api/fetcher.js';
+import { ensureResources } from '../../../../../lib/stores/cacheContext.js';
 
 export const ssr = false;
 export const load = async ({ params }) => {
 	const courseId = params.course ?? '';
-	const resources = await fetchAllResources(courseId);
+	const resources = await ensureResources(courseId);
 	const resourceId = params.id;
 
 	// Find the matching resource

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { setPageTitle } from '../../lib/stores/uiStore';
 
 	let username = '';
 	let password = '';
@@ -9,6 +11,8 @@
 		username: 'student1',
 		password: 'freshman123'
 	};
+
+	onMount(() => setPageTitle('Log In'));
 
 	function handleLogin(): void {
 		if (username === DEMO_CREDENTIALS.username && password === DEMO_CREDENTIALS.password) {

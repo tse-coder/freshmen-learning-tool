@@ -11,7 +11,7 @@ export const fetchCourses = async (): Promise<Course[]> => {
 				const [modules, notes, videos] = await Promise.all([
 					fetchResources(course.id, 'module'),
 					fetchResources(course.id, 'shortNote'),
-					fetchResources(course.id, 'video')
+					fetchVideos(course.id)
 				]);
 
 				return {
@@ -27,7 +27,7 @@ export const fetchCourses = async (): Promise<Course[]> => {
 		return coursesWithCounts;
 	} catch (error) {
 		console.error('Error fetching courses with resource counts:', error);
-		return [];
+		throw error;
 	}
 };
 
@@ -59,5 +59,35 @@ export const fetchAllResources = async (courseId: string) => {
 	} catch (error) {
 		console.error('Error fetching all resources:', error);
 		return [];
+	}
+};
+
+export const fetchVideos = async (courseId: string) => {
+	try {
+		const url = new URL('http://localhost:4000/videos');
+		url.searchParams.append('courseId', courseId);
+
+		const res = await fetch(url.toString());
+		if (!res.ok) throw new Error('Failed to fetch videos');
+		const data = await res.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching videos:', error);
+		return [];
+	}
+};
+
+export const fetchVideoById = async (videoId: string) => {
+	try {
+		const url = new URL('http://localhost:4000/videos');
+		url.searchParams.append('videoId', videoId);
+
+		const res = await fetch(url.toString());
+		if (!res.ok) throw new Error('Failed to fetch video');
+		const data = await res.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching video by id:', error);
+		return null;
 	}
 };

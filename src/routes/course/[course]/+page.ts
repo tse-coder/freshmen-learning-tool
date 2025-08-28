@@ -1,23 +1,29 @@
 import type { PageLoad } from './$types';
-import { fetchAllResources, fetchCourses } from '../../../api/fetcher';
+import type { Course } from '../../../types/types';
+import { ensureCourses, ensureAllCourseResources } from '../../../lib/stores/cacheContext';
 
 export const load: PageLoad = async ({ params }) => {
 	const courseId = params.course ?? '';
-	const courses = await fetchCourses();
 
-	if (!courses) {
-		throw new Error('Courses not loaded');
+	// Load courses from cache or API
+	let courses: Course[] = [];
+	try {
+		courses = await ensureCourses();
+	} catch (err) {
+		console.error('Failed to fetch courses:', err);
 	}
 
-	// Find the matching course
-	const course = courses.find((c) => c.id === courseId);
+	const finalCourseId = courseId || (courses[0] && courses[0].id) || '';
+	const course = courses.find((c: any) => c.id === finalCourseId) ?? courses[0] ?? null;
 
-	if (!course) {
-		throw new Error(`Course "${courseId}" not found`);
+	// Ensure resources + videos are cached and merged
+	let courseResources: any[] = [];
+	try {
+		courseResources = await ensureAllCourseResources(finalCourseId);
+	} catch (err) {
+		console.error('Failed to ensure resources for course:', err);
+		courseResources = [];
 	}
-
-	// Fetch resources for the course
-	const courseResources = await fetchAllResources(course.id);
 
 	return {
 		course,

@@ -17,3 +17,10 @@ export interface Course {
 	notes: number;
 	videos: number;
 }
+
+export interface SampleResourse {
+	id: string;
+	name: string;
+	type: 'shortNote' | 'module' | 'video';
+	course_Id: string;
+}

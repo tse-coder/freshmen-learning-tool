@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { setPageTitle } from '../../lib/stores/uiStore';
 	export let data;
-	const courses = data.courses;
+	const courses = data.fetchedCourses;
+
+	onMount(() => setPageTitle('Courses'));
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-6 text-white">

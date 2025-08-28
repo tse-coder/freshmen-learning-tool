@@ -1,17 +1,18 @@
-import { fetchResources } from '../../../../api/fetcher';
+import { ensureResources } from '../../../../lib/stores/cacheContext';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = ({ params }) => {
+export const load: PageLoad = async ({ params }) => {
 	const courseId = decodeURIComponent(params.course);
 	const resourceType = decodeURIComponent(params.resource);
-
-	const courseResources = fetchResources(courseId, resourceType);
-
-	if (!courseResources) {
-		throw new Error(`Course "${courseId}" not found.`);
+	let courseResources: any[] = [];
+	try {
+		courseResources = await ensureResources(courseId);
+	} catch (err) {
+		console.error('Failed to fetch resources:', err);
+		courseResources = [];
 	}
 
-	const selectedResources = courseResources[resourceType as keyof typeof courseResources] ?? [];
+	const selectedResources = (courseResources ?? []).filter((r) => String(r.type).toLowerCase().includes(String(resourceType).toLowerCase()));
 	return {
 		course: courseId,
 		resourceType,

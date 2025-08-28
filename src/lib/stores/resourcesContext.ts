@@ -1,4 +1,4 @@
-import { writable, type Writable } from 'svelte/store';
-import type { Resource } from '../../types/types';
+export { resourcesCache as resourcesStore, ensureResources } from './cacheContext';
 
-export const resourcesStore: Writable<Resource[] | null> = writable(null);
+// NOTE: `resourcesStore` re-exports the new cache-backed `resourcesCache` for backward compatibility.
+// Use `ensureResources(courseId)` to guarantee loading when needed.

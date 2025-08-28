@@ -5,7 +5,20 @@
 	export let title: string = '';
 
 	function goBack() {
-		goto(backUrl);
+		// If an explicit backUrl is provided and is not the root default '/', prefer it
+		if (backUrl && backUrl !== '/') {
+			goto(backUrl);
+			return;
+		}
+
+		// Otherwise prefer browser history if available
+		if (history.length > 1) {
+			history.back();
+			return;
+		}
+
+		// Final fallback: go to courses
+		goto('/courses');
 	}
 </script>
 

@@ -3,8 +3,11 @@
 	import ResourceGrid from '../../../../components/ResourceGrid.svelte';
 	import SearchBar from '../../../../components/SearchBar.svelte';
 	import VideoPlayer from '../../../../components/VideoPlayer.svelte';
+	import { onMount } from 'svelte';
+	import { setPageTitle } from '../../../../lib/stores/uiStore';
+	import type { Resource } from '../../../../types/types';
 
-	export let data;
+	export let data: { course: string; resourceType: string; resources: Resource[] };
 
 	let selectedVideo: string | null = null;
 	let activeCategory: string = 'All';
@@ -26,6 +29,10 @@
 			return true;
 		})
 		.filter((r) => r.title.toLowerCase().includes(searchQuery.trim().toLowerCase()));
+
+	onMount(() => {
+		setPageTitle(`${data.course} — ${data.resourceType.replace(/([A-Z])/g, ' $1')}`);
+	});
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-950 p-6 text-white">

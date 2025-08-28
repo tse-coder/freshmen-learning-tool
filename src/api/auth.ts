@@ -1,29 +1,30 @@
-// src/lib/auth.js
+// src/api/auth.ts
+// Small client helpers to call backend auth endpoints.
+const BASE = import.meta.env.VITE_BACKEND_URL ?? '';
 
-export async function signIn() {
-	const tg = window.Telegram?.WebApp;
-	if (!tg) throw new Error('Telegram WebApp not available');
-
-	const res = await fetch('https://your-backend.com/auth/login', {
+async function postJson(path: string, body: any) {
+	const res = await fetch(`${BASE}${path}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ initData: tg.initData })
+		credentials: 'include',
+		body: JSON.stringify(body)
 	});
-
-	if (!res.ok) throw new Error('Login failed');
-	return await res.json();
+	const data = await res.json().catch(() => ({}));
+	return { ok: res.ok, status: res.status, data };
 }
 
-export async function signUp() {
-	const tg = window.Telegram?.WebApp;
-	if (!tg) throw new Error('Telegram WebApp not available');
+export async function signInWithTelegram(initData: string) {
+	return postJson('/auth/login', { initData });
+}
 
-	const res = await fetch('https://your-backend.com/auth/signup', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ initData: tg.initData })
-	});
+export async function signUpWithTelegram(initData: string) {
+	return postJson('/auth/signup', { initData });
+}
 
-	if (!res.ok) throw new Error('Signup failed');
-	return await res.json();
+export async function signInWithCredentials(username: string, password: string) {
+	return postJson('/auth/login', { username, password });
+}
+
+export async function signUpWithCredentials(username: string, password: string) {
+	return postJson('/auth/signup', { username, password });
 }

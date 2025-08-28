@@ -1,8 +1,15 @@
-import { fetchCourses } from '../../api/fetcher';
+import type { Course } from '../../types/types';
+import { ensureCourses } from '../../lib/stores/cacheContext';
 
 export const load = async () => {
-	const courses = await fetchCourses();
+	let fetchedCourses: Course[] = [];
+	try {
+		fetchedCourses = await ensureCourses();
+	} catch (err) {
+		console.error('Failed to fetch courses:', err);
+		fetchedCourses = [];
+	}
 	return {
-		courses
+		fetchedCourses
 	};
 };

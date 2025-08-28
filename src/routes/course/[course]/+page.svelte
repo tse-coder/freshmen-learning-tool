@@ -2,24 +2,85 @@
 	import { fade } from 'svelte/transition';
 	import type { PageData } from './$types';
 	import OverlayModal from '../../../components/OverlayModal.svelte';
+	import AuthOverlay from '../../../components/AuthOverlay.svelte';
+	import { isAuthenticated } from '../../../lib/stores/auth';
+	import PlanOverlay from '../../../components/PlanOverlay.svelte';
+	import PaymentOptions from '../../../components/PaymentOptions.svelte';
+	import { onMount } from 'svelte';
+	import { setPageTitle } from '../../../lib/stores/uiStore';
 	import type { Resource } from '../../../types/types';
 
 	export let data: PageData;
 
-	const { course, resources } = data;
+	const { course, resources } = data as any;
 
+	// Normalize resources to a consistent shape so sample data and API responses match
+
+	type NormalizedResource = {
+		id: string;
+		title: string;
+		type: string; // canonical type: 'module' | 'shortNote' | 'video' | 'quizzes' | 'exams' | etc
+		url?: string;
+		thumbnail?: string;
+	};
+
+	function canonicalType(t: any) {
+		if (!t) return '';
+		const s = String(t).toLowerCase();
+		if (s.startsWith('module')) return 'module';
+		if (s.startsWith('short') || s.includes('note')) return 'shortNote';
+		if (s.startsWith('video')) return 'video';
+		if (s.startsWith('quiz') || s.startsWith('quizzes')) return 'quizzes';
+		if (s.startsWith('exam') || s.startsWith('exams')) return 'exams';
+		return s;
+	}
+
+	const normalizedResources: (NormalizedResource & { sample?: boolean })[] = (resources || []).map(
+		(r: any) => {
+			const id = r.id ?? r._id ?? `${r.course_Id ?? 'r'}-${Math.random().toString(36).slice(2, 8)}`;
+			const isSample =
+				String(id).startsWith('resourse') || String(r.course_Id ?? '').includes('course');
+			return {
+				id,
+				title: r.title ?? r.name ?? 'Untitled',
+				type: canonicalType(r.type ?? r.resource_type ?? r.name),
+				url: r.url ?? r.link ?? '',
+				thumbnail: r.thumbnail ?? r.thumb ?? '',
+				sample: isSample
+			};
+		}
+	);
+
+	onMount(() => setPageTitle(course.name.replace(/-/g, ' ')));
+
+	// keys must match the section names used when rendering
 	let openSections: { [key: string]: boolean } = {
-		modules: false,
+		module: false,
 		exams: false,
 		quizzes: false,
-		shortNotes: false,
-		videos: false
+		shortNote: false,
+		video: false
 	};
 
 	let showOverlay = false;
+	let showAuthOverlay = false;
+	let pendingSection: string | null = null;
+	let showPlanOverlay = false;
+	let showPaymentOptions = false;
+	let pendingResourceId: string | null = null;
+	let pendingResourceSection: string | null = null;
 
 	function toggleSection(section: string) {
 		if (section === 'quizzes' || section === 'exams') {
+			// require auth
+			let authed = false;
+			const unsub = isAuthenticated.subscribe((v) => (authed = v));
+			unsub();
+			if (!authed) {
+				pendingSection = section;
+				showAuthOverlay = true;
+				return;
+			}
 			showOverlay = true;
 			return;
 		}
@@ -29,6 +90,21 @@
 
 	function closeOverlay() {
 		showOverlay = false;
+	}
+
+	function handleAuthSuccess() {
+		// after successful auth, open the pending protected section
+		if (pendingSection) {
+			showOverlay = true;
+			pendingSection = null;
+		}
+		// if there was a pending resource (clicked before auth), navigate to it now
+		if (pendingResourceId && pendingResourceSection) {
+			window.location.href = getResourceLink(pendingResourceSection, pendingResourceId);
+			pendingResourceId = null;
+			pendingResourceSection = null;
+		}
+		showAuthOverlay = false;
 	}
 
 	function getResourceLink(section: string, resourceId: string): string {
@@ -43,15 +119,40 @@
 	}
 
 	function formatSectionName(section: string): string {
-		return section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1');
+		// map internal keys to display names
+		const map: Record<string, string> = {
+			module: 'Modules',
+			shortNote: 'Short Notes',
+			video: 'Videos',
+			quizzes: 'Quizzes',
+			exams: 'Exams'
+		};
+		return map[section] ?? section.charAt(0).toUpperCase() + section.slice(1);
 	}
 
 	function handleResourceClick(section: string, id: string) {
+		// Require authentication for any clicked resource/video
+		let authed = false;
+		const unsub = isAuthenticated.subscribe((v) => (authed = v));
+		unsub();
+		if (!authed) {
+			pendingResourceId = id;
+			pendingResourceSection = section;
+			showPlanOverlay = true;
+			return;
+		}
+		// if authed, proceed to resource
 		window.location.href = getResourceLink(section, id);
 	}
 
 	function getResourcesByType(type: string) {
-		return resources.filter((r: Resource) => r.type === type);
+		const wanted = canonicalType(type);
+		return normalizedResources.filter((r) => {
+			const rt = canonicalType(r.type || r.title || '');
+			if (!wanted) return false;
+			// match canonical types (module, shortNote, video, quizzes, exams)
+			return rt === wanted;
+		});
 	}
 </script>
 
@@ -107,7 +208,7 @@
 									}}
 									class="w-60 shrink-0 cursor-pointer snap-start rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500"
 								>
-									{#if section === 'videos'}
+									{#if section === 'video'}
 										<img
 											src={resource.thumbnail}
 											alt={resource.title}
@@ -142,5 +243,49 @@
 	<OverlayModal
 		onClose={closeOverlay}
 		message="This section is under development and will be available soon."
+	/>
+{/if}
+
+{#if showAuthOverlay}
+	<AuthOverlay
+		show={showAuthOverlay}
+		mode="login"
+		on:close={() => (showAuthOverlay = false)}
+		on:success={() => handleAuthSuccess()}
+	/>
+{/if}
+
+{#if showPlanOverlay}
+	<PlanOverlay
+		show={showPlanOverlay}
+		on:close={() => (showPlanOverlay = false)}
+		on:choose={(e: CustomEvent) => {
+			const plan = e.detail.plan;
+			showPlanOverlay = false;
+			if (plan === 'free') {
+				// show login/signup overlay to set username/password
+				showAuthOverlay = true;
+			} else {
+				// paid plan -> show payment options
+				showPaymentOptions = true;
+			}
+		}}
+	/>
+{/if}
+
+{#if showPaymentOptions}
+	<PaymentOptions
+		show={showPaymentOptions}
+		on:close={() => (showPaymentOptions = false)}
+		on:paid={(e: CustomEvent) => {
+				// mark user as authed after payment for demo; navigate to resource
+				import('../../../lib/stores/auth').then((m) => m.loginDemo({ username: 'paid_user' }));
+				showPaymentOptions = false;
+				if (pendingResourceId && pendingResourceSection) {
+					window.location.href = getResourceLink(pendingResourceSection, pendingResourceId);
+					pendingResourceId = null;
+					pendingResourceSection = null;
+				}
+		}}
 	/>
 {/if}
