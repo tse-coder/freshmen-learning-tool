@@ -1,25 +1,17 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import type { PageData } from './$types';
-	import OverlayModal from '../../../components/OverlayModal.svelte';
-	import AuthOverlay from '../../../components/AuthOverlay.svelte';
-	import { isAuthenticated } from '../../../lib/stores/auth';
-	import PlanOverlay from '../../../components/PlanOverlay.svelte';
-	import PaymentOptions from '../../../components/PaymentOptions.svelte';
 	import { onMount } from 'svelte';
 	import { setPageTitle } from '../../../lib/stores/uiStore';
-	import type { Resource } from '../../../types/types';
 
 	export let data: PageData;
-
 	const { course, resources } = data as any;
 
-	// Normalize resources to a consistent shape so sample data and API responses match
-
+	// --- Normalize resources ---
 	type NormalizedResource = {
 		id: string;
 		title: string;
-		type: string; // canonical type: 'module' | 'shortNote' | 'video' | 'quizzes' | 'exams' | etc
+		type: string; // 'module' | 'shortNote' | 'video' | 'quizzes' | 'exams'
 		url?: string;
 		thumbnail?: string;
 	};
@@ -35,26 +27,16 @@
 		return s;
 	}
 
-	const normalizedResources: (NormalizedResource & { sample?: boolean })[] = (resources || []).map(
-		(r: any) => {
-			const id = r.id ?? r._id ?? `${r.course_Id ?? 'r'}-${Math.random().toString(36).slice(2, 8)}`;
-			const isSample =
-				String(id).startsWith('resourse') || String(r.course_Id ?? '').includes('course');
-			return {
-				id,
-				title: r.title ?? r.name ?? 'Untitled',
-				type: canonicalType(r.type ?? r.resource_type ?? r.name),
-				url: r.url ?? r.link ?? '',
-				thumbnail: r.thumbnail ?? r.thumb ?? '',
-				sample: isSample
-			};
-		}
-	);
+	const normalizedResources: NormalizedResource[] = (resources || []).map((r: any) => ({
+		id: r.id ?? r._id ?? `${r.course_Id ?? 'r'}-${Math.random().toString(36).slice(2, 8)}`,
+		title: r.title ?? r.name ?? 'Untitled',
+		type: canonicalType(r.type ?? r.resource_type ?? r.name),
+		url: r.url ?? r.link ?? '',
+		thumbnail: r.thumbnail ?? r.thumb ?? ''
+	}));
 
-	onMount(() => setPageTitle(course.name.replace(/-/g, ' ')));
-
-	// keys must match the section names used when rendering
-	let openSections: { [key: string]: boolean } = {
+	// --- Section toggle state ---
+	let openSections: Record<string, boolean> = {
 		module: false,
 		exams: false,
 		quizzes: false,
@@ -62,64 +44,26 @@
 		video: false
 	};
 
-	let showOverlay = false;
-	let showAuthOverlay = false;
-	let pendingSection: string | null = null;
-	let showPlanOverlay = false;
-	let showPaymentOptions = false;
-	let pendingResourceId: string | null = null;
-	let pendingResourceSection: string | null = null;
+	onMount(() => setPageTitle(course.name.replace(/-/g, ' ')));
 
 	function toggleSection(section: string) {
-		if (section === 'quizzes' || section === 'exams') {
-			// require auth
-			let authed = false;
-			const unsub = isAuthenticated.subscribe((v) => (authed = v));
-			unsub();
-			if (!authed) {
-				pendingSection = section;
-				showAuthOverlay = true;
-				return;
-			}
-			showOverlay = true;
-			return;
-		}
 		openSections[section] = !openSections[section];
 		openSections = { ...openSections };
 	}
 
-	function closeOverlay() {
-		showOverlay = false;
+	// --- Navigation ---
+	function getResourceLink(section: string, resourceId: string) {
+		if (section === 'video') return `${course.id}/video-player/${resourceId}`;
+		if (section === 'module' || section === 'shortNote') return `${course.id}/pdf-reader/${resourceId}`;
+		return `/course/${course.id}/${section}`;
 	}
 
-	function handleAuthSuccess() {
-		// after successful auth, open the pending protected section
-		if (pendingSection) {
-			showOverlay = true;
-			pendingSection = null;
-		}
-		// if there was a pending resource (clicked before auth), navigate to it now
-		if (pendingResourceId && pendingResourceSection) {
-			window.location.href = getResourceLink(pendingResourceSection, pendingResourceId);
-			pendingResourceId = null;
-			pendingResourceSection = null;
-		}
-		showAuthOverlay = false;
+	function handleResourceClick(section: string, id: string) {
+		// Direct navigation without overlays
+		window.location.href = getResourceLink(section, id);
 	}
 
-	function getResourceLink(section: string, resourceId: string): string {
-		if (section === 'video') {
-			return `${course.id}/video-player/${resourceId}`;
-		} else if (section === 'module' || section === 'shortNote') {
-			return `${course.id}/pdf-reader/${resourceId}`;
-			// return resources.find((r: Resource) => r.id === resourceId)?.url;
-		} else {
-			return `/course/${course.id}/${section}`;
-		}
-	}
-
-	function formatSectionName(section: string): string {
-		// map internal keys to display names
+	function formatSectionName(section: string) {
 		const map: Record<string, string> = {
 			module: 'Modules',
 			shortNote: 'Short Notes',
@@ -130,63 +74,30 @@
 		return map[section] ?? section.charAt(0).toUpperCase() + section.slice(1);
 	}
 
-	function handleResourceClick(section: string, id: string) {
-		// Require authentication for any clicked resource/video
-		let authed = false;
-		const unsub = isAuthenticated.subscribe((v) => (authed = v));
-		unsub();
-		if (!authed) {
-			pendingResourceId = id;
-			pendingResourceSection = section;
-			showPlanOverlay = true;
-			return;
-		}
-		// if authed, proceed to resource
-		window.location.href = getResourceLink(section, id);
-	}
-
 	function getResourcesByType(type: string) {
 		const wanted = canonicalType(type);
-		return normalizedResources.filter((r) => {
-			const rt = canonicalType(r.type || r.title || '');
-			if (!wanted) return false;
-			// match canonical types (module, shortNote, video, quizzes, exams)
-			return rt === wanted;
-		});
+		return normalizedResources.filter((r) => canonicalType(r.type || r.title || '') === wanted);
 	}
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-6 text-white md:p-10">
-	<h1 class="mb-10 text-center text-4xl font-bold capitalize">{course.name.replace(/-/g, ' ')}</h1>
 
 	{#each ['module', 'exams', 'quizzes', 'shortNote', 'video'] as section}
 		<div class="mb-8">
-			<!-- Section Toggle Button -->
+			<!-- Section Toggle -->
 			<button
 				on:click={() => toggleSection(section)}
 				class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 text-lg font-semibold text-gray-200 backdrop-blur-md transition-all duration-300 hover:bg-white/10"
 			>
 				<span>{formatSectionName(section)}</span>
-
-				{#if section === 'quizzes' || section === 'exams'}
-					<span class="text-xl">🔒</span>
-				{:else}
-					<svg
-						class="h-6 w-6 transform transition-transform duration-300 {openSections[section]
-							? 'rotate-180'
-							: ''}"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M19 9l-7 7-7-7"
-						/>
-					</svg>
-				{/if}
+				<svg
+					class="h-6 w-6 transform transition-transform duration-300 {openSections[section] ? 'rotate-180' : ''}"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+				</svg>
 			</button>
 
 			{#if openSections[section]}
@@ -202,9 +113,7 @@
 									tabindex="0"
 									on:click={() => handleResourceClick(section, resource.id)}
 									on:keypress={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
-											handleResourceClick(section, resource.id);
-										}
+										if (e.key === 'Enter' || e.key === ' ') handleResourceClick(section, resource.id);
 									}}
 									class="w-60 shrink-0 cursor-pointer snap-start rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500"
 								>
@@ -221,7 +130,6 @@
 								</div>
 							{/each}
 						</div>
-
 						<a
 							href={`/course/${course.id}/${section}`}
 							class="mt-4 block text-sm font-medium text-blue-400 hover:underline"
@@ -238,54 +146,3 @@
 		</div>
 	{/each}
 </div>
-
-{#if showOverlay}
-	<OverlayModal
-		onClose={closeOverlay}
-		message="This section is under development and will be available soon."
-	/>
-{/if}
-
-{#if showAuthOverlay}
-	<AuthOverlay
-		show={showAuthOverlay}
-		mode="login"
-		on:close={() => (showAuthOverlay = false)}
-		on:success={() => handleAuthSuccess()}
-	/>
-{/if}
-
-{#if showPlanOverlay}
-	<PlanOverlay
-		show={showPlanOverlay}
-		on:close={() => (showPlanOverlay = false)}
-		on:choose={(e: CustomEvent) => {
-			const plan = e.detail.plan;
-			showPlanOverlay = false;
-			if (plan === 'free') {
-				// show login/signup overlay to set username/password
-				showAuthOverlay = true;
-			} else {
-				// paid plan -> show payment options
-				showPaymentOptions = true;
-			}
-		}}
-	/>
-{/if}
-
-{#if showPaymentOptions}
-	<PaymentOptions
-		show={showPaymentOptions}
-		on:close={() => (showPaymentOptions = false)}
-		on:paid={(e: CustomEvent) => {
-				// mark user as authed after payment for demo; navigate to resource
-				import('../../../lib/stores/auth').then((m) => m.loginDemo({ username: 'paid_user' }));
-				showPaymentOptions = false;
-				if (pendingResourceId && pendingResourceSection) {
-					window.location.href = getResourceLink(pendingResourceSection, pendingResourceId);
-					pendingResourceId = null;
-					pendingResourceSection = null;
-				}
-		}}
-	/>
-{/if}

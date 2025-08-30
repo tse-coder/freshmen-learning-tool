@@ -7,36 +7,65 @@
 
 	let { children } = $props();
 	let user: any = null;
-	// use auto-subscription in template via $pageTitle
+
 	onMount(() => {
+		// Load Telegram WebApp SDK if not present
 		if (!window.Telegram) {
 			const script = document.createElement('script');
 			script.src = 'https://telegram.org/js/telegram-web-app.js';
+			script.async = true;
 			document.head.appendChild(script);
 		}
-		const tg = window.Telegram?.WebApp;
-		if (tg) {
-			tg.expand(); // Expands the webview
-			user = tg.initDataUnsafe?.user; // User info from Telegram
+
+		// Wait until Telegram SDK is available
+		const initTelegram = () => {
+			const tg = window.Telegram?.WebApp;
+			if (!tg) return;
+
+			tg.expand(); // Expand WebApp to full height
+
+			// Get user info from Telegram
+			user = tg.initDataUnsafe?.user ?? null;
+
 			if (user) {
-				// Try to verify login with backend using initData
-				import('../lib/stores/auth').then((m) => {
+				// Attempt backend authentication
+				import('../lib/stores/auth').then((auth) => {
 					if (tg.initData) {
-						m.loginWithTelegramInit(tg.initData).catch(() => {
-							// backend failed; fall back to client-side set
-							m.setAuthenticatedFromTelegram(user);
+						auth.loginWithTelegramInit(tg.initData).catch(() => {
+							// fallback to client-side set if backend fails
+							auth.setAuthenticatedFromTelegram(user);
 						});
 					} else {
-						m.setAuthenticatedFromTelegram(user);
+						auth.setAuthenticatedFromTelegram(user);
 					}
 				});
 			}
+		};
+
+		// If SDK already loaded
+		if (window.Telegram?.WebApp) {
+			initTelegram();
+		} else {
+			// Retry after SDK loads
+			const scriptCheck = setInterval(() => {
+				if (window.Telegram?.WebApp) {
+					clearInterval(scriptCheck);
+					initTelegram();
+				}
+			}, 100);
 		}
 	});
 </script>
 
-<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full"></div>
+<!-- Background gradient / radial fade -->
+<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
+
+<!-- Top panel for all pages except root -->
 {#if $page.url.pathname !== '/'}
 	<TopPanel title={$pageTitle} />
 {/if}
-{@render children()}
+
+<!-- Render page content -->
+<div class="relative z-10">
+	{@render children()}
+</div>

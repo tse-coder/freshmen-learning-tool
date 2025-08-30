@@ -1,14 +1,27 @@
 <script lang="ts">
-	import { PdfViewer } from 'svelte-pdf-simple';
+  import { onMount } from "svelte";
+  import WebViewer from "@pdftron/pdfjs-express-viewer";
 
-	export let data;
-	const { resource } = data;
-	const url = resource.url;
-	let pdfProps = {
-		page: 1, // starting page
-		scale: 1.0, // zoom level
-		rotate: 0 // rotation degrees
-	};
+  export let data;
+  const { resource } = data;
+
+  let viewerEl: HTMLDivElement;
+  let initialized = false; // guard to prevent double init
+
+  onMount(() => {
+    if (initialized) return;
+    initialized = true;
+
+    WebViewer(
+      {
+        path: "/pdfjs-express", 
+        initialDoc: "https://pdftron.s3.amazonaws.com/downloads/pl/demo-annotated.pdf"
+      },
+      viewerEl
+    ).then((instance: any) => {
+      console.log("WebViewer loaded", instance);
+    });
+  });
 </script>
 
-<PdfViewer {url} props={pdfProps} />
+<div bind:this={viewerEl} style="height: 100vh; width: 100%"></div>

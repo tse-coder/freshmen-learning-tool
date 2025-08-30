@@ -1,9 +1,11 @@
 // src/api/auth.ts
 // Small client helpers to call backend auth endpoints.
-const BASE = import.meta.env.VITE_BACKEND_URL ?? '';
+
+import { SERVER_URL } from "../config/env";
+
 
 async function postJson(path: string, body: any) {
-	const res = await fetch(`${BASE}${path}`, {
+	const res = await fetch(`${SERVER_URL}${path}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		credentials: 'include',

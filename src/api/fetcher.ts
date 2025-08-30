@@ -1,8 +1,9 @@
+import { SERVER_URL } from '../config/env';
 import type { Course } from '../types/types';
-
+console.log(SERVER_URL);
 export const fetchCourses = async (): Promise<Course[]> => {
 	try {
-		const res = await fetch('http://localhost:4000/courses');
+		const res = await fetch(`${SERVER_URL}/courses`);
 		if (!res.ok) throw new Error('Failed to fetch courses');
 		const courses = await res.json();
 
@@ -33,7 +34,7 @@ export const fetchCourses = async (): Promise<Course[]> => {
 
 export const fetchResources = async (courseId: string, type: string) => {
 	try {
-		const url = new URL('http://localhost:4000/resources');
+		const url = new URL(`${SERVER_URL}/resources`);
 		url.searchParams.append('courseId', courseId);
 		url.searchParams.append('type', type);
 
@@ -49,7 +50,7 @@ export const fetchResources = async (courseId: string, type: string) => {
 
 export const fetchAllResources = async (courseId: string) => {
 	try {
-		const url = new URL('http://localhost:4000/resources');
+		const url = new URL(`${SERVER_URL}/resources`);
 		url.searchParams.append('courseId', courseId);
 
 		const res = await fetch(url.toString());
@@ -64,7 +65,7 @@ export const fetchAllResources = async (courseId: string) => {
 
 export const fetchVideos = async (courseId: string) => {
 	try {
-		const url = new URL('http://localhost:4000/videos');
+		const url = new URL(`${SERVER_URL}/videos`);
 		url.searchParams.append('courseId', courseId);
 
 		const res = await fetch(url.toString());
@@ -79,7 +80,7 @@ export const fetchVideos = async (courseId: string) => {
 
 export const fetchVideoById = async (videoId: string) => {
 	try {
-		const url = new URL('http://localhost:4000/videos');
+		const url = new URL(`${SERVER_URL}/videos`);
 		url.searchParams.append('videoId', videoId);
 
 		const res = await fetch(url.toString());

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import ProfileButton from './ProfileButton.svelte';
 
 	export let backUrl: string = '/';
 	export let title: string = '';
@@ -37,6 +38,10 @@
 		</svg>
 	</button>
 	<span class="truncate text-lg font-semibold text-white">{title}</span>
+
+	<div class="mr-2 ml-auto">
+		<ProfileButton />
+	</div>
 </div>
 
 <style>
