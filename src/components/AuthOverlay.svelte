@@ -113,3 +113,4 @@
 <style>
 	/* Overlay styles are inlined for simplicity */
 </style>
+<!-- Removed: Telegram only -->

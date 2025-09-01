@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, authUser, logout } from '../lib/stores/auth';
+	import { isAuthenticated, authUser, logout, loginWithTelegramInit } from '../lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
+	import OverlayLoader from './OverlayLoader.svelte';
+	import { overlayLoading, overlayMessage } from '../lib/stores/overlayLoader';
+	import Error from './Error.svelte';
 
 	let authed = false;
 	let user: any = null;
 	const open = writable(false);
+	let showError = false;
+	let errorMsg = '';
 
 	const unsubAuth = isAuthenticated.subscribe((v) => (authed = v));
 	const unsubUser = authUser.subscribe((v) => (user = v));
@@ -18,8 +23,23 @@
 		};
 	});
 
-	function goToLogin() {
-		goto('/signin');
+	async function goToLogin() {
+		// Try Telegram verification
+		showError = false;
+		overlayLoading.set(true);
+		overlayMessage.set('Verifying Telegram...');
+		try {
+			const initData = window.Telegram?.WebApp?.initData;
+			if (!initData) throw { message: 'Telegram init data missing' };
+			const res = await loginWithTelegramInit(initData);
+			if (!res.ok) throw { message: res.error || 'Telegram verification failed' };
+		overlayLoading.set(false);
+		// Stay on the current page after verification
+		} catch (err) {
+			overlayLoading.set(false);
+			errorMsg = (err as any)?.message || 'Verification failed';
+			showError = true;
+		}
 	}
 
 	function toggleOpen() {
@@ -96,9 +116,17 @@
 		{/if}
 	</div>
 {:else}
-	<button class="rounded-md bg-white/5 px-3 py-2 text-sm text-white" on:click={goToLogin}
-		>Log in</button
-	>
+	<div>
+		<button class="rounded-md bg-white/5 px-3 py-2 text-sm text-white" on:click={goToLogin}>
+			Verify with Telegram
+		</button>
+		{#if $overlayLoading}
+			<OverlayLoader message={$overlayMessage} />
+		{/if}
+		{#if showError}
+			<Error message={errorMsg} onClose={() => { showError = false; goto('/') }} />
+		{/if}
+	</div>
 {/if}
 
 <style>

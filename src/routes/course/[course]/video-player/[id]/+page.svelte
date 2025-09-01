@@ -28,9 +28,6 @@
 	<div class="mx-auto flex max-w-[1200px] flex-col gap-10 lg:flex-row">
 		<!-- Video Player Section -->
 		<div class="flex-1">
-			<h1 class="mb-4 text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl">
-				{data.title}
-			</h1>
 
 			<div
 				class="mx-auto mb-6 aspect-video w-full max-w-[860px] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl ring-1 ring-white/10"

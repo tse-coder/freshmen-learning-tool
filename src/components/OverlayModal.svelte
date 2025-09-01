@@ -10,7 +10,7 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<header class="mb-4 flex items-start justify-between">
+		<header class="mb-4 flex items-center justify-between">
 			<div>
 				<h2 class="text-lg font-semibold text-white">Coming Soon</h2>
 				<p class="mb-6 text-gray-300">{message}</p>

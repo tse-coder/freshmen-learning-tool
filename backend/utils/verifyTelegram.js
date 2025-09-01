@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-const botToken = process.env.BOT_TOKEN;
+const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
 export const verifyTelegramInitData = (initData) => {
 	const params = new URLSearchParams(initData);
@@ -14,7 +14,7 @@ export const verifyTelegramInitData = (initData) => {
 		.map((key) => `${key}=${data[key]}`)
 		.join('\n');
 
-	const secretKey = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
+	const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
 
 	const hmac = crypto.createHmac('sha256', secretKey).update(checkString).digest('hex');
 

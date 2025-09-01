@@ -1,3 +1,5 @@
+import {verifyTelegramInitData} from "../utils/verifyTelegram.js";
+
 export const login = async (req, res) => {
 	const { initData } = req.body;
 

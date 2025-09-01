@@ -59,3 +59,4 @@
 		</div>
 	</div>
 {/if}
+<!-- Removed: Telegram only -->

@@ -50,3 +50,4 @@
 		</div>
 	</div>
 </div>
+// Removed: Telegram only

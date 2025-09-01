@@ -73,3 +73,4 @@
 		</p>
 	</div>
 </div>
+// Removed: Telegram only
