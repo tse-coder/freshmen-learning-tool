@@ -104,10 +104,6 @@
 
 				<div class="mt-3 flex flex-col gap-2">
 					<button
-						class="w-full rounded-md bg-white/5 px-3 py-2 text-sm text-white"
-						on:click={() => goto('/profile')}>View Profile</button
-					>
-					<button
 						class="w-full rounded-md border border-white/6 bg-transparent px-3 py-2 text-sm text-white"
 						on:click={doLogout}>Log out</button
 					>

@@ -1,5 +1,0 @@
-src/routes/signin/+page.svelte
-src/routes/signup/+page.svelte
-src/components/PlanOverlay.svelte
-src/components/PaymentOptions.svelte
-src/components/AuthOverlay.svelte
