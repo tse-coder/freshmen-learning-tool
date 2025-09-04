@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  // @ts-ignore
   import WebViewer from "@pdftron/pdfjs-express-viewer";
 
   export let data;

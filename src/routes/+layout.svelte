@@ -1,71 +1,75 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import '../app.css';
-	import TopPanel from '../components/TopPanel.svelte';
-	import { page } from '$app/stores';
-	import { pageTitle } from '../lib/stores/uiStore';
+import { onMount } from 'svelte';
+import '../app.css';
+import TopPanel from '../components/TopPanel.svelte';
+import { page } from '$app/stores';
+import { pageTitle } from '../lib/stores/uiStore';
+import { theme } from '../lib/stores/themeStore';
 
-	let { children } = $props();
-	let user: any = null;
+let user: any = null;
 
-	onMount(() => {
-		// Load Telegram WebApp SDK if not present
-		if (!window.Telegram) {
-			const script = document.createElement('script');
-			script.src = 'https://telegram.org/js/telegram-web-app.js';
-			script.async = true;
-			document.head.appendChild(script);
-		}
+// This reactive statement updates the theme on the <html> element
+// whenever the $theme store changes.
+$: if (typeof window !== 'undefined') {
+	document.documentElement.setAttribute('data-theme', $theme);
+}
 
-		// Wait until Telegram SDK is available
-		const initTelegram = () => {
-			const tg = window.Telegram?.WebApp;
-			if (!tg) return;
+onMount(() => {
+	// Load Telegram WebApp SDK if not present
+	if (!window.Telegram) {
+		const script = document.createElement('script');
+		script.src = 'https://telegram.org/js/telegram-web-app.js';
+		script.async = true;
+		document.head.appendChild(script);
+	}
 
-			tg.expand(); // Expand WebApp to full height
+	// Wait until Telegram SDK is available
+	const initTelegram = () => {
+		const tg = window.Telegram?.WebApp;
+		if (!tg) return;
 
-			// Get user info from Telegram
-			user = tg.initDataUnsafe?.user ?? null;
+		tg.expand(); // Expand WebApp to full height
 
-			if (user) {
-				// Attempt backend authentication
-				import('../lib/stores/auth').then((auth) => {
-					if (tg.initData) {
-						auth.loginWithTelegramInit(tg.initData).catch(() => {
-							// fallback to client-side set if backend fails
-							auth.setAuthenticatedFromTelegram(user);
-						});
-					} else {
+		// Get user info from Telegram
+		user = tg.initDataUnsafe?.user ?? null;
+
+		if (user) {
+			// Attempt backend authentication
+			import('../lib/stores/auth').then((auth) => {
+				if (tg.initData) {
+					auth.loginWithTelegramInit(tg.initData).catch(() => {
+						// fallback to client-side set if backend fails
 						auth.setAuthenticatedFromTelegram(user);
-					}
-				});
-			}
-		};
-
-		// If SDK already loaded
-		if (window.Telegram?.WebApp) {
-			initTelegram();
-		} else {
-			// Retry after SDK loads
-			const scriptCheck = setInterval(() => {
-				if (window.Telegram?.WebApp) {
-					clearInterval(scriptCheck);
-					initTelegram();
+					});
+				} else {
+					auth.setAuthenticatedFromTelegram(user);
 				}
-			}, 100);
+			});
 		}
-	});
+	};
+
+	// If SDK already loaded
+	if (window.Telegram?.WebApp) {
+		initTelegram();
+	} else {
+		// Retry after SDK loads
+		const scriptCheck = setInterval(() => {
+			if (window.Telegram?.WebApp) {
+				clearInterval(scriptCheck);
+				initTelegram();
+			}
+		}, 100);
+	}
+});
 </script>
 
-<!-- Background gradient / radial fade -->
-<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
+<div>
+	<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
+	{#if $page.url.pathname !== '/'}
+		<TopPanel title={$pageTitle} />
+	{/if}
 
-<!-- Top panel for all pages except root -->
-{#if $page.url.pathname !== '/'}
-	<TopPanel title={$pageTitle} />
-{/if}
-
-<!-- Render page content -->
-<div class="relative z-10">
-	{@render children()}
+	<div class="relative z-10">
+		<slot />
+	</div>
 </div>

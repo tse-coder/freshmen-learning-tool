@@ -33,6 +33,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@lottiefiles/dotlottie-svelte": "^0.7.2",
 		"@pdftron/pdfjs-express-viewer": "^8.7.5",
 		"cookie-parser": "^1.4.7",
 		"dotenv": "^17.2.1",

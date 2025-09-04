@@ -1,49 +1,99 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { setPageTitle } from '../../lib/stores/uiStore';
-	import Loader from '../../components/Loader.svelte';
-	import ErrorBanner from '../../components/ErrorBanner.svelte';
-	import { ensureAllCourseResources } from '../../lib/stores/cacheContext';
-	export let data;
-	const courses = data.fetchedCourses;
+import { goto } from '$app/navigation';
+import { onMount } from 'svelte';
+import { setPageTitle } from '../../lib/stores/uiStore';
+import Loader from '../../components/Loader.svelte';
+import ErrorBanner from '../../components/ErrorBanner.svelte';
+import { ensureAllCourseResources } from '../../lib/stores/cacheContext';
+let DotLottieComponent: any = null;
+export let data;
+const courses = data.fetchedCourses;
 
-	onMount(() => setPageTitle('Courses'));
+onMount(() => setPageTitle('Courses'));
 
-	let loadingCourseId: string | null = null;
-	let courseError: Record<string, string | null> = {};
-
-	async function viewResources(courseId: string) {
-		// immediate feedback
-		loadingCourseId = courseId;
-		courseError[courseId] = null;
-		try {
-			// prefetch resources & videos (cacheContext will short-circuit if already present)
-			await ensureAllCourseResources(courseId);
-			// navigate when ready
-			goto(`/course/${courseId}`);
-		} catch (err) {
-			console.error('Failed to prefetch resources for course', courseId, err);
-			courseError[courseId] = String((err as any)?.message ?? err ?? 'Failed to load');
-		} finally {
-			loadingCourseId = null;
-		}
+onMount(async () => {
+	// load dotlottie component only on client to avoid SSR issues
+	try {
+		const mod = await import('@lottiefiles/dotlottie-svelte');
+		DotLottieComponent = mod.DotLottieSvelte ?? null;
+	} catch (e) {
+		console.warn('Failed to load DotLottieSvelte dynamically', e);
 	}
+});
+
+let loadingCourseId: string | null = null;
+let courseError: Record<string, string | null> = {};
+
+function getLottieFile(courseName: string): string {
+	// Normalize course name to match lottie file
+	const map: Record<string, string> = {
+		'Applied Maths I': 'Maths',
+		'Maths (natural)': 'Maths',
+		'Maths (social)': 'Maths',
+		'Antropology': 'Antropology',
+		'Biology': 'Biology',
+		'Chemistry': 'Chemistry',
+		'Civics': 'Civics',
+		'Economics': 'Economics',
+		'Emerging Tech': 'Emerging',
+		'English': 'English',
+		'Entrepreneurship': 'Entrepreneurship',
+		'Geography': 'Geography',
+		'Global Trends': 'Global',
+		'History': 'History',
+		'Inclusiveness': 'Inclusiveness',
+		'Logic': 'Logic',
+		'Physical Fitness': 'PhysicalFitness',
+		'Physics': 'Physics',
+		'Psychology': 'Psychology',
+	};
+	// fallback: remove spaces and parens
+	const key = map[courseName] || courseName.replace(/\s|\(|\)/g, '');
+	return `/lottie/${key}.json`;
+}
+
+async function viewResources(courseId: string) {
+	loadingCourseId = courseId;
+	courseError[courseId] = null;
+	try {
+		await ensureAllCourseResources(courseId);
+		goto(`/course/${courseId}`);
+	} catch (err) {
+		console.error('Failed to prefetch resources for course', courseId, err);
+		courseError[courseId] = String((err as any)?.message ?? err ?? 'Failed to load');
+	} finally {
+		loadingCourseId = null;
+	}
+}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-6 text-white">
+<div class="min-h-screen bg-main p-6 prose prose-slate max-w-none">
 
 	<div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{#each courses as course}
 			<div
-				class="rounded-xl border border-white/10 bg-white/5 p-6 shadow-lg backdrop-blur-md transition-transform duration-300 hover:scale-105"
+				class="glass-card p-6 transition-transform duration-300 hover:scale-105 flex items-center relative"
 			>
-				<h2 class="mb-2 text-xl font-semibold">{course.name}</h2>
-				<ul class="space-y-1 text-sm text-gray-300">
-					<li><span class="font-medium text-blue-400">Modules:</span> {course.modules}</li>
-					<li><span class="font-medium text-blue-400">Notes:</span> {course.notes}</li>
-					<li><span class="font-medium text-blue-400">Videos:</span> {course.videos}</li>
-				</ul>
+				<div class="w-full text-center">
+					<h2 class="mb-2 text-md font-serif italic font-semibold tracking-tight text-heading dark:text-slate-100">{course.name}</h2>
+					<ul class="list-none p-0 m-0 space-y-1 text-xs text-muted dark:text-slate-300 leading-snug">
+						<li>
+							<span class="inline-block text-primary dark:text-primary font-semibold mr-1">Modules:</span>
+							<span class="text-black dark:text-slate-300 font-light">{course.modules}</span>
+						</li>
+						<li>
+							<span class="inline-block text-primary dark:text-primary font-semibold mr-1">Notes:</span>
+							<span class="text-black dark:text-slate-300 font-light">{course.notes}</span>
+						</li>
+						<li>
+							<span class="inline-block text-primary dark:text-primary font-semibold mr-1">Videos:</span>
+							<span class="text-black dark:text-slate-300 font-light">{course.videos}</span>
+						</li>
+					</ul>
+				</div>
+				{#if DotLottieComponent}
+					<svelte:component this={DotLottieComponent} src={getLottieFile(course.name)} autoplay={true} loop={true} class="w-24 h-24 mb-2" />
+				{/if}
 				{#if courseError[course.id]}
 					<div class="mt-4">
 						<ErrorBanner message={courseError[course.id] ?? 'Failed to load'} actionLabel="Retry" onAction={() => viewResources(course.id)} />
@@ -51,7 +101,7 @@
 				{:else}
 					<div class="mt-4">
 						<button
-							class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-2 font-semibold text-white transition duration-300 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
+							class="flex items-center justify-center gap-2 btn-primary py-2 transition duration-300 disabled:opacity-60 absolute bottom-0 right-0 z-0 course-card-button px-10"
 							on:click={() => viewResources(course.id)}
 							disabled={loadingCourseId === course.id}
 						>

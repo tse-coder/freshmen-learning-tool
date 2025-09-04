@@ -80,16 +80,17 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-6 text-white md:p-10">
+<div class="min-h-screen bg-main p-6 md:p-10">
 
 	{#each ['module', 'exams', 'quizzes', 'shortNote', 'video'] as section}
 		<div class="mb-8">
 			<!-- Section Toggle -->
 			<button
 				on:click={() => toggleSection(section)}
-				class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 text-lg font-semibold text-gray-200 backdrop-blur-md transition-all duration-300 hover:bg-white/10"
+				class="flex w-full items-center justify-between glass-card p-4 text-lg font-semibold text-heading transition-all duration-300 hover:bg-white/20"
+				aria-expanded={openSections[section]}
 			>
-				<span>{formatSectionName(section)}</span>
+				   <span>{formatSectionName(section)}</span>
 				<svg
 					class="h-6 w-6 transform transition-transform duration-300 {openSections[section] ? 'rotate-180' : ''}"
 					fill="none"
@@ -104,7 +105,7 @@
 				{#if getResourcesByType(section).length > 0}
 					<div
 						transition:fade={{ duration: 300 }}
-						class="mt-4 rounded-lg border border-white/10 bg-gradient-to-br from-white/5 via-white/2 to-transparent p-4 pb-3 backdrop-blur-md"
+						class="mt-2 glass-card pb-3 p-3"
 					>
 						<div class="scrollbar-custom flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
 							{#each getResourcesByType(section) as resource}
@@ -115,7 +116,7 @@
 									on:keypress={(e) => {
 										if (e.key === 'Enter' || e.key === ' ') handleResourceClick(section, resource.id);
 									}}
-									class="w-60 shrink-0 cursor-pointer snap-start rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500"
+									class="w-60 shrink-0 cursor-pointer snap-start glass-card p-4 transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500"
 								>
 									{#if section === 'video'}
 										<img
@@ -125,8 +126,8 @@
 											class="mb-2 h-32 w-full scale-105 rounded-sm object-cover transition-transform duration-300 hover:scale-107"
 										/>
 									{/if}
-									<h3 class="truncate text-base font-semibold text-white">{resource.title}</h3>
-									<p class="text-sm text-gray-400 capitalize">{resource.type}</p>
+									<h3 class="truncate text-base font-semibold text-heading">{resource.title}</h3>
+									<p class="text-sm text-muted capitalize">{resource.type}</p>
 								</div>
 							{/each}
 						</div>

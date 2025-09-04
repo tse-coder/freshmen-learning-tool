@@ -35,28 +35,27 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-950 p-6 text-white">
-	<h1 class="mb-6 text-3xl font-bold capitalize">
-		{data.course} — {data.resourceType.replace(/([A-Z])/g, ' $1')}
-	</h1>
+<div class="min-h-screen bg-main p-6 flex flex-col items-center">
+	<div class="w-full max-w-4xl glass-card p-6">
 
-	<!-- Search -->
-	<SearchBar bind:value={searchQuery} place="search for {data.resourceType}..." />
+		<!-- Search -->
+		<SearchBar bind:value={searchQuery} place="search for {data.resourceType}..." />
 
-	<!-- Category Tabs (for Exams) -->
-	{#if showTabs}
-		<CategoryTabs
-			categories={['All', 'Mid', 'Final']}
-			bind:active={activeCategory}
-			onChange={onCategoryChange}
-		/>
-	{/if}
+		<!-- Category Tabs (for Exams) -->
+		{#if showTabs}
+			<CategoryTabs
+				categories={['All', 'Mid', 'Final']}
+				bind:active={activeCategory}
+				onChange={onCategoryChange}
+			/>
+		{/if}
 
-	<!-- Video Player (only for videos) -->
-	{#if isVideo && selectedVideo}
-		<VideoPlayer url={selectedVideo} title="Video resource" />
-	{/if}
+		<!-- Video Player (only for videos) -->
+		{#if isVideo && selectedVideo}
+			<VideoPlayer url={selectedVideo} title="Video resource" />
+		{/if}
 
-	<!-- Grid of Resources -->
-	<ResourceGrid resources={filteredResources} />
+		<!-- Grid of Resources -->
+		<ResourceGrid resources={filteredResources} />
+	</div>
 </div>
