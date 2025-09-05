@@ -67,7 +67,7 @@ async function viewResources(courseId: string) {
 				class="glass-card p-6 transition-transform duration-300 hover:scale-105 flex items-center relative"
 			>
 				<div class="w-full text-center">
-					<h2 class="mb-2 text-md font-serif italic font-semibold tracking-tight text-heading dark:text-slate-100">{course.name}</h2>
+					<h2 class="mb-2 text-sm font-serif italic font-semibold tracking-tight text-heading dark:text-slate-100">{course.name}</h2>
 					<ul class="list-none p-0 m-0 space-y-1 text-xs text-muted dark:text-slate-300 leading-snug">
 						<li>
 							<span class="inline-block text-primary dark:text-primary font-semibold mr-1">Modules:</span>
