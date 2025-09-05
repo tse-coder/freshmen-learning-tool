@@ -5,21 +5,13 @@ import { setPageTitle } from '../../lib/stores/uiStore';
 import Loader from '../../components/Loader.svelte';
 import ErrorBanner from '../../components/ErrorBanner.svelte';
 import { ensureAllCourseResources } from '../../lib/stores/cacheContext';
-let DotLottieComponent: any = null;
+import Lottie from '../../components/Lottie.svelte';
 export let data;
 const courses = data.fetchedCourses;
 
 onMount(() => setPageTitle('Courses'));
 
-onMount(async () => {
-	// load dotlottie component only on client to avoid SSR issues
-	try {
-		const mod = await import('@lottiefiles/dotlottie-svelte');
-		DotLottieComponent = mod.DotLottieSvelte ?? null;
-	} catch (e) {
-		console.warn('Failed to load DotLottieSvelte dynamically', e);
-	}
-});
+
 
 let loadingCourseId: string | null = null;
 let courseError: Record<string, string | null> = {};
@@ -91,9 +83,13 @@ async function viewResources(courseId: string) {
 						</li>
 					</ul>
 				</div>
-				{#if DotLottieComponent}
-					<svelte:component this={DotLottieComponent} src={getLottieFile(course.name)} autoplay={true} loop={true} class="w-24 h-24 mb-2" />
-				{/if}
+				   <Lottie
+					   path={getLottieFile(course.name)}
+					   autoplay={true}
+					   loop={true}
+					   rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+					   className="w-24 h-24 mb-2"
+				   />
 				{#if courseError[course.id]}
 					<div class="mt-4">
 						<ErrorBanner message={courseError[course.id] ?? 'Failed to load'} actionLabel="Retry" onAction={() => viewResources(course.id)} />
