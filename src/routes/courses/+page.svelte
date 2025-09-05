@@ -64,9 +64,9 @@ async function viewResources(courseId: string) {
 	<div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{#each courses as course}
 			<div
-				class="glass-card p-6 transition-transform duration-300 hover:scale-105 flex items-center relative"
+				class="glass-card p-6 transition-transform duration-300 hover:scale-105 flex items-center justify-between relative"
 			>
-				<div class="w-full text-center">
+				<div class="text-center">
 					<h2 class="mb-2 text-sm font-serif italic font-semibold tracking-tight text-heading dark:text-slate-100">{course.name}</h2>
 					<ul class="list-none p-0 m-0 space-y-1 text-xs text-muted dark:text-slate-300 leading-snug">
 						<li>
