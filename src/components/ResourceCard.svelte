@@ -1,22 +1,19 @@
 <script lang="ts">
 	import type { VideoResource } from "../types/types";
 
-
 	export let resource: VideoResource;
 	const { id, url, thumbnail, title, type } = resource;
 </script>
 
 <a
-	href={type === 'PDF' ? '📄' : type === 'Video' ? '🎥' : '📘'}
+	href={url}
 	target="_blank"
-	class="max-w-sm min-w-[200px] rounded-xl border border-white/10 bg-white/5 p-4 text-white backdrop-blur-md transition-transform hover:scale-105 hover:shadow-lg"
+	class="max-w-sm min-w-[200px] rounded-xl border border-gray-300 bg-white/70 p-4 text-gray-900 shadow-md backdrop-blur-sm transition-transform hover:scale-105 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-white"
 >
 	{#if thumbnail}
-		<img src={thumbnail} alt={title} class="mb-2 h-32 w-full rounded object-cover" />
+		<img src={thumbnail} alt={title} class="mb-2 h-32 w-full rounded-lg object-cover" />
 	{/if}
-	<div class="mb-1 text-2xl">
-		{type === 'PDF' ? '📄' : type === 'Video' ? '🎥' : '📘'}
-	</div>
-	<h3 class="text-base font-semibold">{title}</h3>
-	<p class="text-sm text-gray-300">{type}</p>
+
+	<h3 class="text-base font-semibold truncate">{title}</h3>
+	<p class="mt-1 text-sm text-gray-600 dark:text-gray-400 capitalize">{type}</p>
 </a>

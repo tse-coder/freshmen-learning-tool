@@ -1,6 +1,6 @@
 import { defineConfig } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
-
+import daisyui from 'daisyui';
 export default defineConfig({
   content: [
     './src/**/*.{html,js,svelte,ts}',
@@ -10,5 +10,9 @@ export default defineConfig({
   theme: {
     extend: {},
   },
-  plugins: [typography],
+  plugins: [typography.daisyui],
+  daisyui: {
+    themes: ["light", "dark", "synthwave", "cupcake"], // pick the themes you want
+    darkTheme: "dark",
+  },
 });

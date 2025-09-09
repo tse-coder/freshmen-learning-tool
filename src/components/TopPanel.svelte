@@ -19,12 +19,12 @@ function goBack() {
 }
 </script>
 
-<div class="top-panel flex h-16 items-center px-4 shadow-md
+<div class="top-panel flex h-16 items-center px-2 shadow-md
             bg-gradient-to-r from-blue-400 to-blue-600 dark:from-blue-900 dark:to-blue-800 
             text-white backdrop-blur-md border-b border-blue-500/20 dark:border-blue-300/20">
 	<button 
 		aria-label="Back" 
-		class="mr-3 rounded p-2 hover:bg-white/20 dark:hover:bg-white/10 transition"
+		class="sm:mr-3 rounded p-2 hover:bg-white/20 dark:hover:bg-white/10 transition"
 		on:click={goBack}>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +37,7 @@ function goBack() {
 		</svg>
 	</button>
 
-	<span class="truncate text-lg font-semibold">{title}</span>
+	<span class="truncate sm:text-lg font-semibold">{title}</span>
 
 	<div class="ml-auto flex items-center gap-2">
 		<ThemeToggler />

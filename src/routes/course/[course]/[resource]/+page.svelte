@@ -20,6 +20,7 @@
 	const onCategoryChange = (category: string) => {
 		activeCategory = category;
 	};
+
 	// Filter based on category (e.g., Mid/Final) or search
 	$: filteredResources = data.resources
 		.filter((r) => {
@@ -35,13 +36,10 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-950 p-6 text-white">
-	<h1 class="mb-6 text-3xl font-bold capitalize">
-		{data.course} — {data.resourceType.replace(/([A-Z])/g, ' $1')}
-	</h1>
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 text-gray-900 dark:from-black dark:via-gray-900 dark:to-gray-950 dark:text-white p-6">
 
 	<!-- Search -->
-	<SearchBar bind:value={searchQuery} place="search for {data.resourceType}..." />
+	<SearchBar bind:value={searchQuery} place="Search for {data.resourceType}..." />
 
 	<!-- Category Tabs (for Exams) -->
 	{#if showTabs}

@@ -1,4 +1,5 @@
 <script lang="ts">
+// @ts-ignore
 	import type { Resource, VideoResource } from '$lib/data/resources';
 	import ResourceCard from './ResourceCard.svelte';
 

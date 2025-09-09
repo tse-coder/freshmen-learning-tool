@@ -6,7 +6,7 @@
 {#if url}
 	<div class="mx-auto mb-6 aspect-video w-full max-w-4xl">
 		<iframe
-			class="h-full w-full rounded-xl border border-white/20"
+			class="h-full w-full rounded-xl border border-gray-300 shadow-md dark:border-white/20"
 			src={url}
 			{title}
 			frameborder="0"

@@ -6,6 +6,7 @@ import Loader from '../../components/Loader.svelte';
 import ErrorBanner from '../../components/ErrorBanner.svelte';
 import { ensureAllCourseResources } from '../../lib/stores/cacheContext';
 import Lottie from '../../components/Lottie.svelte';
+	import SearchBar from '../../components/SearchBar.svelte';
 export let data;
 const courses = data.fetchedCourses;
 
@@ -57,15 +58,18 @@ async function viewResources(courseId: string) {
 		loadingCourseId = null;
 	}
 }
+
+let searchValue=""
+
 </script>
 
 <div class="min-h-screen 
   bg-gradient-to-br from-gray-50 via-white to-gray-100 
   dark:from-gray-900 dark:via-black dark:to-gray-800 
   p-6 text-gray-900 dark:text-white">
-
+  <SearchBar place={"Search for courses..."} bind:value={searchValue}/>
   <div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {#each courses as course}
+    {#each courses.filter(course=>course.name.toLowerCase().includes(searchValue.toLowerCase())) as course}
       <div
         class="p-6 rounded-2xl border border-black/10 bg-white/70 
           dark:border-white/10 dark:bg-white/5 
