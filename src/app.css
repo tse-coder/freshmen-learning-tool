@@ -1,122 +1,16 @@
-
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
 body {
-	@apply min-h-screen transition-colors duration-300;
+	@apply min-h-screen bg-stone-950;
 }
-
-/* Theme root variables */
-
-:root {
-	--color-bg: #f7fafd;
-	--color-bg-panel: rgba(255,255,255,0.7);
-	--color-bg-card: rgba(255,255,255,0.8);
-	--color-primary: #2563eb;
-	--color-secondary: #6366f1;
-	--color-accent: #38bdf8;
-	--color-heading: #1e293b;
-	--color-text: #475569;
-	--color-text-muted: #64748b;
-	--color-border: rgba(30,41,59,0.12);
-	--color-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
-}
-
-
-[data-theme='dark'] {
-	--color-bg: #181c2a;
-	--color-bg-panel: rgba(30,41,59,0.7);
-	--color-bg-card: rgba(30,41,59,0.8);
-	--color-primary: #6366f1;
-	--color-secondary: #2563eb;
-	--color-accent: #38bdf8;
-	--color-heading: #f1f5f9;
-	--color-text: #cbd5e1;
-	--color-text-muted: #94a3b8;
-	--color-border: rgba(255,255,255,0.10);
-	--color-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
-}
-
-
-body, .bg-main {
-	background: var(--color-bg);
-	color: var(--color-text);
-	font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-.glass-card {
-	background: var(--color-bg-card);
-	border: 1.5px solid var(--color-border);
-	box-shadow: var(--color-shadow);
-	backdrop-filter: blur(18px) saturate(1.2);
-	-webkit-backdrop-filter: blur(18px) saturate(1.2);
-	border-radius: 1.25rem;
-	transition: background 0.3s, border 0.3s;
-}
-
-.text-heading {
-	color: var(--color-heading);
-	font-weight: 800;
-	letter-spacing: -0.01em;
-}
-
-.text-body {
-	color: var(--color-text);
-	font-weight: 400;
-}
-
-.text-muted {
-	color: var(--color-text-muted);
-}
-
-.btn-primary {
-	background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-	color: #fff;
-	border-radius: 0.75rem;
-	font-weight: 600;
-	box-shadow: 0 2px 8px 0 rgba(37,99,235,0.08);
-	transition: background 0.2s;
-}
-.btn-primary:hover {
-	background: linear-gradient(90deg, #1d4ed8, #4f46e5);
-}
-
-.bg-panel {
-	background: var(--color-bg-panel);
-}
-
-.bg-card {
-	background: var(--color-bg-card);
-}
-
-.text-primary {
-	color: var(--color-primary);
-}
-.text-secondary {
-	color: var(--color-secondary);
-}
-.text-accent {
-	color: var(--color-accent);
-}
-.text-muted {
-	color: var(--color-text-muted);
-}
-
-.border-main {
-	border-color: var(--color-border);
-}
-
-.shadow-main {
-	box-shadow: 0 4px 24px 0 var(--color-shadow);
-}
-
 .bg-gradient-pattern {
 	background-image:
-		linear-gradient(to right, rgba(60, 80, 255, 0.04) 1px, transparent 1px),
-		linear-gradient(to bottom, rgba(60, 80, 255, 0.04) 1px, transparent 1px);
+		linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 	background-size: 32px 32px;
 }
-
 .mask-radial-fade {
 	mask-image: radial-gradient(circle at center, transparent 30%, black 90%);
 	--webkit-mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
@@ -129,12 +23,4 @@ body, .bg-main {
 	@apply [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-corner]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-track]:bg-transparent;
 }
 
-/* Utility for theme transitions */
-.theme-transition {
-	transition: background 0.3s, color 0.3s;
-}
-
-.course-card-button{
-	border-top-right-radius: 0;
-	border-bottom-left-radius: 0;
-}
+/*  [&::-webkit-scrollbar]:w-px [&::-webkit-scrollbar-track]:bg-gray-100  [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-corner]:hidden dark:[&::-webkit-scrollbar-track]:bg-slate-950 */

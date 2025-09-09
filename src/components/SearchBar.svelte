@@ -7,5 +7,5 @@
 	type="text"
 	placeholder={place}
 	bind:value
-	class="w-full rounded-lg bg-white/10 p-2 text-white placeholder-gray-400 backdrop-blur-md focus:ring focus:ring-blue-500 focus:outline-none"
+	class="w-full rounded-lg bg-base-200 border border-base-300 p-2 text-base-content placeholder-base-content/60 focus:ring focus:ring-primary focus:outline-none"
 />
