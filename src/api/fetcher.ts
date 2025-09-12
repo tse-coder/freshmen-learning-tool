@@ -1,6 +1,5 @@
 import { SERVER_URL } from '../config/env';
 import type { Course } from '../types/types';
-console.log(SERVER_URL);
 export const fetchCourses = async (): Promise<Course[]> => {
 	try {
 		const res = await fetch(`${SERVER_URL}/courses`);
