@@ -1,6 +1,5 @@
 import { defineConfig } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
-import daisyui from 'daisyui';
 export default defineConfig({
   content: [
     './src/**/*.{html,js,svelte,ts}',

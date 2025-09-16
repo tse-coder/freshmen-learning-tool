@@ -104,13 +104,15 @@ let searchValue=""
           </ul>
         </div>
 
-        <Lottie
-          path={getLottieFile(course.name)}
-          autoplay={true}
-          loop={true}
-          rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
-          className="w-24 h-24 mb-2"
-        />
+        {#key getLottieFile(course.name)}
+          <Lottie
+            path={getLottieFile(course.name)}
+            autoplay={true}
+            loop={true}
+            rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+            className="w-24 h-24 mb-2"
+          />
+        {/key}
 
         {#if courseError[course.id]}
           <div class="mt-4">

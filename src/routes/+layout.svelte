@@ -8,10 +8,10 @@ import { theme } from '../lib/stores/themeStore';
 
 let user: any = null;
 
-// This reactive statement updates the theme on the <html> element
-// whenever the $theme store changes.
+// This reactive statement toggles the 'dark' class on the <html> element
+// whenever the $theme store changes, for Tailwind dark mode support.
 $: if (typeof window !== 'undefined') {
-	document.documentElement.setAttribute('data-theme', $theme);
+	document.documentElement.classList.toggle('dark', $theme === 'dark');
 }
 
 onMount(() => {

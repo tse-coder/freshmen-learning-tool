@@ -66,13 +66,15 @@
         dark:border-white/10 dark:bg-white/5"
     >
       <div class="flex gap-2 items-end mb-5">
-        <Lottie
-          path={getLottieFile(features[currentIndex].title)}
-          autoplay={true}
-          loop={false}
-          rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
-          className="w-17 h-17"
-        />
+				{#key features[currentIndex].icon}
+					<Lottie
+						path={getLottieFile(features[currentIndex].title)}
+						autoplay={true}
+						loop={false}
+						rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+						className="w-17 h-17"
+					/>
+				{/key}
         <h2 class="text-2xl w-30">{features[currentIndex].title}</h2>
       </div>
       <div transition:fade>
