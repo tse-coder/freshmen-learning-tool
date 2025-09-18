@@ -9,9 +9,5 @@ export default defineConfig({
   theme: {
     extend: {},
   },
-  plugins: [typography.daisyui],
-  daisyui: {
-    themes: ["light", "dark", "synthwave", "cupcake"], // pick the themes you want
-    darkTheme: "dark",
-  },
+  plugins: [typography],
 });
