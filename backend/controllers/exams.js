@@ -15,7 +15,7 @@ async function getExamDataByCourseId(courseId) {
     throw new Error(`Failed to fetch exam: ${examError.message}`);
   }
 
-  return { exam };
+  return exam;
 }
 /**
  * get all exams

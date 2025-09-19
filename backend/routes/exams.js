@@ -4,7 +4,6 @@ const router = express.Router();
 
 // Route to fetch exam data by ID
 router.get('/', async (req, res) => {
-  console.log(req.query.courseId);
   try {
     const data = await getExamDataByCourseId(req.query.courseId);
     res.json(data);
