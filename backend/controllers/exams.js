@@ -9,24 +9,13 @@ async function getExamDataByCourseId(courseId) {
   const { data: exam, error: examError } = await supabase
     .from('exams')
     .select('*')
-    .eq('course_id', courseId)
-    .single();
+    .eq('course_id', courseId);
 
   if (examError) {
     throw new Error(`Failed to fetch exam: ${examError.message}`);
   }
 
-  // Fetch questions for the exam
-  const { data: questions, error: questionsError } = await supabase
-    .from('exam_questions')
-    .select('*')
-    .eq('exam_id', examId);
-
-  if (questionsError) {
-    throw new Error(`Failed to fetch questions: ${questionsError.message}`);
-  }
-
-  return { exam, questions };
+  return { exam };
 }
 /**
  * get all exams
@@ -43,4 +32,4 @@ async function getAllExams() {
   return exams;
 }
 
-export { getExamData, getAllExams };
+export { getExamDataByCourseId, getAllExams };
