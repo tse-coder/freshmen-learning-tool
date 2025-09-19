@@ -1,11 +1,11 @@
 import express from 'express';
-import { getAllExams, getExamData } from '../controllers/exams.js';
+import { getAllExams, getExamDataByCourseId } from '../controllers/exams.js';
 const router = express.Router();
 
 // Route to fetch exam data by ID
 router.get('/', async (req, res) => {
   try {
-    const data = await getExamData(req.query.examId);
+    const data = await getExamDataByCourseId(req.params.courseId);
     res.json(data);
   } catch (error) {
     console.error(`Error fetching exam data: ${error.message}`);

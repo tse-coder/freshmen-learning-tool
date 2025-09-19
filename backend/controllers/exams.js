@@ -4,12 +4,12 @@ import { supabase } from "../supabase/client.js";
  * @param {string} examId - The ID of the exam to fetch
  * @returns {Promise<Object>} - The exam data and its questions
  */
-async function getExamData(examId) {
+async function getExamDataByCourseId(courseId) {
   // Fetch exam metadata
   const { data: exam, error: examError } = await supabase
     .from('exams')
     .select('*')
-    .eq('id', examId)
+    .eq('course_id', courseId)
     .single();
 
   if (examError) {
