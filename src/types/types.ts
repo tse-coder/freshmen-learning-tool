@@ -16,6 +16,7 @@ export interface Course {
 	modules: number;
 	notes: number;
 	videos: number;
+	exams?: number;
 }
 
 export interface SampleResourse {
@@ -23,4 +24,22 @@ export interface SampleResourse {
 	name: string;
 	type: 'shortNote' | 'module' | 'video';
 	course_Id: string;
+}
+export interface ExamResource {
+	id: string;
+	title: string;
+	description: string;
+	duration: number; // in minutes
+	courseId: string;
+	totalQuestions: number;
+	thumbnail?: string;
+}
+
+export interface ExamQuestion {
+	id: string;
+	question: string;
+	type: 'multiple_choice' | 'fill_in_blank';
+	options?: string[];
+	answer: string;
+	examId: string;
 }

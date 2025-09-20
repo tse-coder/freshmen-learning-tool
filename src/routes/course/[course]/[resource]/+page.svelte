@@ -36,19 +36,20 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 text-gray-900 dark:from-black dark:via-gray-900 dark:to-gray-950 dark:text-white p-6">
-
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 text-gray-900 dark:from-black dark:via-gray-900 dark:to-gray-950 dark:text-white px-6 pt-27 relative">
+	<div class="fixed top-0 left-0 right-0 p-5 z-8 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-lg shadow-md mt-15">
+		<SearchBar bind:value={searchQuery} place="Search for {data.resourceType}..." />
+	
+		<!-- Category Tabs (for Exams) -->
+		{#if showTabs}
+			<CategoryTabs
+				categories={['All', 'mid', 'final']}
+				bind:active={activeCategory}
+				onChange={onCategoryChange}
+			/>
+		{/if}
+	</div>
 	<!-- Search -->
-	<SearchBar bind:value={searchQuery} place="Search for {data.resourceType}..." />
-
-	<!-- Category Tabs (for Exams) -->
-	{#if showTabs}
-		<CategoryTabs
-			categories={['All', 'Mid', 'Final']}
-			bind:active={activeCategory}
-			onChange={onCategoryChange}
-		/>
-	{/if}
 
 	<!-- Video Player (only for videos) -->
 	{#if isVideo && selectedVideo}

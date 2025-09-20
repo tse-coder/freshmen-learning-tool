@@ -91,3 +91,37 @@ export const fetchVideoById = async (videoId: string) => {
 		return null;
 	}
 };
+
+export const fetchExamsByCourseId = async (courseId: string) => {
+  try {
+    const url = new URL(`${SERVER_URL}/exams?courseId=${courseId}`);
+
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error('Failed to fetch exams');
+
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching exams:', error);
+    throw error;
+  }
+}
+
+export const fetchExams = async () => {
+  try {
+    const res = await fetch(`${SERVER_URL}/exams/all`);
+    if (!res.ok) throw new Error('Failed to fetch exams');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching exams:', error);
+    throw error;
+  }
+};
+
+export const fetchQuestionsByExamId = async(examId:string)=>{
+	try {
+		const res = await fetch(`${SERVER_URL}/questions?examId=${examId}`)
+		return res.json();
+	} catch (error) {
+		throw error;
+	}
+}

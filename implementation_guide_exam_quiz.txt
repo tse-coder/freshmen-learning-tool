@@ -1,0 +1,305 @@
+# Implementation Guide for Exam and Quiz Functionality
+
+## Overview
+This guide outlines the step-by-step process to implement the exam and quiz functionality in the FreshHub project. The exams and quizzes will include multiple-choice and fill-in-the-blank questions, fetched from the backend (Supabase). The implementation will include a timer for each test and use a sleek UI for interaction.
+
+---
+
+## Step 1: Database Design
+
+
+### Table: `courses`
+- (Already exists in Supabase)
+- **Columns** (relevant):
+  - `id` (UUID, Primary Key): Unique identifier for each course.
+
+### Table: `exams`
+- **Purpose**: Store metadata for exams (mid/final) for each course.
+- **Columns**:
+  - `id` (UUID, Primary Key): Unique identifier for each exam.
+  - `course_id` (UUID, Foreign Key): References `courses.id`.
+  - `type` (ENUM): Type of exam (`mid`, `final`).
+  - `title` (TEXT): Title of the exam.
+  - `description` (TEXT): Description of the exam.
+  - `duration` (INTEGER): Duration of the exam in minutes.
+  - `created_at` (TIMESTAMP): Timestamp of when the exam was created.
+
+### Table: `quizzes`
+- **Purpose**: Store metadata for quizzes for each course.
+- **Columns**:
+  - `id` (UUID, Primary Key): Unique identifier for each quiz.
+  - `course_id` (UUID, Foreign Key): References `courses.id`.
+  - `title` (TEXT): Title of the quiz.
+  - `description` (TEXT): Description of the quiz.
+  - `duration` (INTEGER): Duration of the quiz in minutes (optional).
+  - `created_at` (TIMESTAMP): Timestamp of when the quiz was created.
+
+### Table: `exam_questions`
+- **Purpose**: Store questions for exams.
+- **Columns**:
+  - `id` (UUID, Primary Key): Unique identifier for each question.
+  - `exam_id` (UUID, Foreign Key): References `exams.id`.
+  - `type` (ENUM): Type of question (`multiple_choice`, `fill_in_blank`).
+  - `question` (TEXT): The question text.
+  - `options` (JSONB): Options for multiple-choice questions (nullable for fill-in-the-blank).
+  - `answer` (TEXT): Correct answer.
+  - `created_at` (TIMESTAMP): Timestamp of when the question was created.
+
+### Table: `quiz_questions`
+- **Purpose**: Store questions for quizzes.
+- **Columns**:
+  - `id` (UUID, Primary Key): Unique identifier for each question.
+  - `quiz_id` (UUID, Foreign Key): References `quizzes.id`.
+  - `type` (ENUM): Type of question (`multiple_choice`, `fill_in_blank`).
+  - `question` (TEXT): The question text.
+  - `options` (JSONB): Options for multiple-choice questions (nullable for fill-in-the-blank).
+  - `answer` (TEXT): Correct answer.
+  - `created_at` (TIMESTAMP): Timestamp of when the question was created.
+
+---
+
+## Step 2: Backend Implementation
+
+### 1. **Fetch Questions from Supabase**
+- Create a new route in the backend: `routes/exams.js`.
+- Add a function to fetch questions and exam metadata from Supabase:
+  ```javascript
+  const { createClient } = require('@supabase/supabase-js');
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function getExamData(examId) {
+    const { data: exam, error: examError } = await supabase
+      .from('exams')
+      .select('*')
+      .eq('id', examId)
+      .single();
+
+    if (examError) throw new Error(examError.message);
+
+    const { data: questions, error: questionsError } = await supabase
+      .from('exam_questions')
+      .select('*')
+      .eq('exam_id', examId);
+
+    if (questionsError) throw new Error(questionsError.message);
+
+    return { exam, questions };
+  }
+
+  module.exports = { getExamData };
+  ```
+
+### 2. **API Endpoint**
+- Add an endpoint to serve exam data to the frontend:
+  ```javascript
+  const express = require('express');
+  const { getExamData } = require('../controllers/exams');
+  const router = express.Router();
+
+  router.get('/:examId', async (req, res) => {
+    try {
+      const data = await getExamData(req.params.examId);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  module.exports = router;
+  ```
+
+---
+
+## Step 3: Frontend Implementation
+
+### 1. **Routing**
+- Add a new route in `src/routes/course/[course]/exam/[id]/+page.svelte` for the exam page.
+- Use the `id` parameter to fetch exam data from the backend.
+
+### 2. **Components**
+- **ExamPage.svelte**: Main page for displaying the exam.
+  - Fetch exam data using `load` function.
+  - Pass data to child components.
+- **QuestionCard.svelte**: Component for rendering individual questions.
+  - Props:
+    - `type`: Type of question.
+    - `question`: Question text.
+    - `options`: Options for multiple-choice questions.
+    - `onAnswer`: Callback for when the user selects an answer.
+- **Timer.svelte**: Timer component.
+  - Props:
+    - `duration`: Duration of the exam.
+    - `onTimeUp`: Callback for when the timer ends.
+
+### 3. **State Management**
+- Use Svelte stores to manage state:
+  - `currentQuestionIndex`: Tracks the current question.
+  - `answers`: Stores user answers.
+  - `timeRemaining`: Tracks remaining time.
+
+### 4. **UI Design**
+- Use Tailwind CSS for styling.
+- Example layout:
+  ```html
+  <div class="exam-container">
+    <Timer duration={exam.duration} onTimeUp={handleTimeUp} />
+    <QuestionCard
+      type={questions[currentQuestionIndex].type}
+      question={questions[currentQuestionIndex].question}
+      options={questions[currentQuestionIndex].options}
+      onAnswer={handleAnswer}
+    />
+    <button on:click={goToNextQuestion}>Next</button>
+  </div>
+  ```
+
+---
+
+## Step 4: Timer Functionality
+
+### Timer Logic
+- Use a Svelte store to track time remaining.
+- Example:
+  ```javascript
+  import { writable } from 'svelte/store';
+
+  export const timeRemaining = writable(duration * 60); // duration in seconds
+
+  const interval = setInterval(() => {
+    timeRemaining.update((time) => {
+      if (time <= 0) {
+        clearInterval(interval);
+        return 0;
+      }
+      return time - 1;
+    });
+  }, 1000);
+  ```
+
+---
+
+## Step 5: Submission and Results
+
+### Submission
+- Add a `submitExam` function to send user answers to the backend:
+  ```javascript
+  async function submitExam(examId, answers) {
+    const response = await fetch(`/api/exams/${examId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to submit exam');
+    }
+
+    return await response.json();
+  }
+  ```
+
+### Results Page
+- Create a new route: `src/routes/exam/[id]/results/+page.svelte`.
+- Display the user's score and correct answers.
+
+---
+
+## Step 6: Testing
+
+### Manual Testing
+- Test the following scenarios:
+  - Timer ends before submission.
+  - User submits answers successfully.
+  - User navigates between questions.
+
+### Automated Testing
+- Write unit tests for:
+  - Timer logic.
+  - Question rendering.
+  - Answer submission.
+
+---
+
+## Routing and Backend Process for Exams
+
+#### Frontend Routing
+1. **Starting Point**:
+   - Users can access exams from:
+     - `/[course]`: The main course page.
+     - `/[course]/[resource]`: A specific resource page within the course.
+   - Clicking an exam will navigate to `/course/exam/[id]`.
+
+2. **Route Structure**:
+   - Add a new route: `src/routes/course/exam/[id]/+page.svelte`.
+   - Use the `id` parameter to fetch exam data from the backend.
+
+3. **Navigation Example**:
+   - From `/[course]`:
+     ```svelte
+     <a href={`/course/exam/${exam.id}`}>Start Exam</a>
+     ```
+   - From `/[course]/[resource]`:
+     ```svelte
+     <a href={`/course/exam/${exam.id}`}>Start Exam</a>
+     ```
+
+#### Backend Process
+1. **API Endpoint**:
+   - Add a new endpoint in the backend to fetch exam data:
+     ```javascript
+     const express = require('express');
+     const { getExamData } = require('../controllers/exams');
+     const router = express.Router();
+
+     router.get('/:examId', async (req, res) => {
+       try {
+         const data = await getExamData(req.params.examId);
+         res.json(data);
+       } catch (error) {
+         res.status(500).json({ error: error.message });
+       }
+     });
+
+     module.exports = router;
+     ```
+
+2. **Controller Logic**:
+   - Fetch exam and question data from Supabase:
+     ```javascript
+     const { createClient } = require('@supabase/supabase-js');
+     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+     async function getExamData(examId) {
+       const { data: exam, error: examError } = await supabase
+         .from('exams')
+         .select('*')
+         .eq('id', examId)
+         .single();
+
+       if (examError) throw new Error(examError.message);
+
+       const { data: questions, error: questionsError } = await supabase
+         .from('exam_questions')
+         .select('*')
+         .eq('exam_id', examId);
+
+       if (questionsError) throw new Error(questionsError.message);
+
+       return { exam, questions };
+     }
+
+     module.exports = { getExamData };
+     ```
+
+3. **Best Practices**:
+   - **Validation**:
+     - Validate `examId` to ensure it exists and belongs to the correct course.
+   - **Error Handling**:
+     - Return meaningful error messages for missing or invalid data.
+   - **Caching**:
+     - Use caching (e.g., Redis) to reduce database load for frequently accessed exams.
+   - **Security**:
+     - Ensure only authorized users can access the exam data.
+     - Use JWT or session-based authentication to verify user identity.
+
+---

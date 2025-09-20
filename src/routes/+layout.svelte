@@ -1,44 +1,32 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import '../app.css';
-import TopPanel from '../components/TopPanel.svelte';
-import { page } from '$app/stores';
-import { pageTitle } from '../lib/stores/uiStore';
-import { theme } from '../lib/stores/themeStore';
+	import { onMount } from 'svelte';
+	import '../app.css';
+	import TopPanel from '../components/TopPanel.svelte';
+	import { page } from '$app/stores';
+	import { pageTitle } from '../lib/stores/uiStore';
+	import { theme } from '../lib/stores/themeStore';
 
-let user: any = null;
+	let user: any = null;
 
-// This reactive statement toggles the 'dark' class on the <html> element
-// whenever the $theme store changes, for Tailwind dark mode support.
-$: if (typeof window !== 'undefined') {
-	document.documentElement.classList.toggle('dark', $theme === 'dark');
-}
-
-onMount(() => {
-	// Load Telegram WebApp SDK if not present
-	if (!window.Telegram) {
-		const script = document.createElement('script');
-		script.src = 'https://telegram.org/js/telegram-web-app.js';
-		script.async = true;
-		document.head.appendChild(script);
+	// Apply Tailwind dark mode
+	$: if (typeof window !== 'undefined') {
+		document.documentElement.classList.toggle('dark', $theme === 'dark');
 	}
 
-	// Wait until Telegram SDK is available
-	const initTelegram = () => {
+	function initTelegram() {
 		const tg = window.Telegram?.WebApp;
 		if (!tg) return;
 
-		tg.expand(); // Expand WebApp to full height
+		tg.expand(); // expand webapp
 
-		// Get user info from Telegram
+		// Immediately set user if available
 		user = tg.initDataUnsafe?.user ?? null;
 
+		// Run backend login in background
 		if (user) {
-			// Attempt backend authentication
 			import('../lib/stores/auth').then((auth) => {
 				if (tg.initData) {
 					auth.loginWithTelegramInit(tg.initData).catch(() => {
-						// fallback to client-side set if backend fails
 						auth.setAuthenticatedFromTelegram(user);
 					});
 				} else {
@@ -46,26 +34,26 @@ onMount(() => {
 				}
 			});
 		}
-	};
-
-	// If SDK already loaded
-	if (window.Telegram?.WebApp) {
-		initTelegram();
-	} else {
-		// Retry after SDK loads
-		const scriptCheck = setInterval(() => {
-			if (window.Telegram?.WebApp) {
-				clearInterval(scriptCheck);
-				initTelegram();
-			}
-		}, 100);
 	}
-});
+
+	onMount(() => {
+		if (window.Telegram?.WebApp) {
+			// SDK already present
+			initTelegram();
+		} else {
+			// Load script with callback instead of polling
+			const script = document.createElement('script');
+			script.src = 'https://telegram.org/js/telegram-web-app.js';
+			script.async = true;
+			script.onload = () => initTelegram();
+			document.head.appendChild(script);
+		}
+	});
 </script>
 
 <div>
 	<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
-	{#if $page.url.pathname !== '/'}
+	{#if $page.url.pathname !== '/' || $page.url.pathname.includes('exam')}
 		<TopPanel title={$pageTitle} />
 	{/if}
 

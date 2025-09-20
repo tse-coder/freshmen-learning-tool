@@ -5,15 +5,22 @@
 	import { setPageTitle } from '../../../lib/stores/uiStore';
 
 	export let data: PageData;
-	const { course, resources } = data as any;
+	const { course, resources, exams } = data as any;
 
 	// --- Normalize resources ---
 	type NormalizedResource = {
 		id: string;
 		title: string;
-		type: string; // 'module' | 'shortNote' | 'video' | 'quizzes' | 'exams'
+		type: string; // 'module' | 'shortNote' | 'video'
 		url?: string;
 		thumbnail?: string;
+	};
+	type NormalizedExam = {
+		id: string;
+		title: string;
+		description?: string;
+		duration?: number; // in minutes
+		type: string; // 'midExam' | 'finalExam'
 	};
 
 	function canonicalType(t: any) {
@@ -22,8 +29,8 @@
 		if (s.startsWith('module')) return 'module';
 		if (s.startsWith('short') || s.includes('note')) return 'shortNote';
 		if (s.startsWith('video')) return 'video';
-		if (s.startsWith('quiz') || s.startsWith('quizzes')) return 'quizzes';
-		if (s.startsWith('exam') || s.startsWith('exams')) return 'exams';
+		if (s === 'final') return 'finalExam';
+		if (s === 'mid') return 'midExam';
 		return s;
 	}
 
@@ -35,11 +42,19 @@
 		thumbnail: r.thumbnail ?? r.thumb ?? ''
 	}));
 
+	const normalizedExams: NormalizedExam[] = (exams || []).map((e: any) => ({
+		id: e.id ?? e._id ?? `${course.id ?? 'e'}-${Math.random().toString(36).slice(2, 8)}`,
+		title: e.title ?? e.name ?? 'Untitled Exam',
+		type: canonicalType(e.type ?? 'final'), // normalize to final or mid
+		description: e.description ?? '',
+		duration: e.duration ?? 30 // default to 30 minutes
+	}));
+
 	// --- Section toggle state ---
 	let openSections: Record<string, boolean> = {
 		module: false,
-		exams: false,
-		quizzes: false,
+		finalExam: false,
+		midExam: false,
 		shortNote: false,
 		video: false
 	};
@@ -51,60 +66,70 @@
 		openSections = { ...openSections };
 	}
 
-	// --- Navigation ---
-	function getResourceLink(section: string, resourceId: string) {
-		if (section === 'video') return `${course.id}/video-player/${resourceId}`;
-		if (section === 'module' || section === 'shortNote') return `${course.id}/pdf-reader/${resourceId}`;
-		return `/course/${course.id}/${section}`;
-	}
-
-	function handleResourceClick(section: string, resource: NormalizedResource) {
-		if ((section === 'module' || section === 'shortNote') && resource.url && window.Telegram?.WebApp) {
-			// Open PDF directly inside Telegram mini app
-			window.Telegram.WebApp.openLink(resource.url);
-		} else if (section === 'video') {
-			window.location.href = getResourceLink(section, resource.id);
-		} else {
-			// Fallback for other sections
-			window.location.href = getResourceLink(section, resource.id);
-		}
-	}
-
-
 	function formatSectionName(section: string) {
 		const map: Record<string, string> = {
+			finalExam: 'Final Exams',
+			midExam: 'Mid Exams',
 			module: 'Modules',
 			shortNote: 'Short Notes',
-			video: 'Videos',
-			quizzes: 'Quizzes',
-			exams: 'Exams'
+			video: 'Videos'
 		};
 		return map[section] ?? section.charAt(0).toUpperCase() + section.slice(1);
 	}
 
 	function getResourcesByType(type: string) {
-		const wanted = canonicalType(type);
-		return normalizedResources.filter((r) => canonicalType(r.type || r.title || '') === wanted).slice(0, 6);
+		if (type === 'finalExam' || type === 'midExam')
+			return normalizedExams.filter((e) => e.type === type).slice(0, 4);
+		return normalizedResources.filter((r) => r.type === type).slice(0, 4);
+	}
+
+	function handleResourceClick(section: string, resource: NormalizedResource | NormalizedExam) {
+		if ((section === 'module' || section === 'shortNote') && 'url' in resource && resource.url) {
+			window.location.href = resource.url;
+		} else if (section === 'video') {
+			window.location.href = `${course.id}/video-player/${resource.id}`;
+		} else if (section === 'finalExam' || section === 'midExam') {
+			window.location.href = `/course/${course.id}/exam/${resource.id}`;
+		} else {
+			window.location.href = `${course.id}/${section}/${resource.id}`;
+		}
+	}
+	function getMoreLink(section: string) {
+		if (section === 'midExam') {
+			return `/course/${course.id}/exams?tab=mid`;
+		}
+		if (section === 'finalExam') {
+			return `/course/${course.id}/exams?tab=final`;
+		}
+		return `/course/${course.id}/${section}`;
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-200 to-blue-100 dark:from-gray-900 dark:to-black p-6 text-gray-900 dark:text-white md:p-10">
-
-	{#each ['module', 'exams', 'quizzes', 'shortNote', 'video'] as section}
+<div
+	class="min-h-screen bg-gradient-to-b from-gray-200 to-blue-100 p-6 text-gray-900 md:p-10 dark:from-gray-900 dark:to-black dark:text-white"
+>
+	{#each ['module', 'midExam', 'finalExam', 'shortNote', 'video'] as section}
 		<div class="mb-8">
 			<!-- Section Toggle -->
 			<button
 				on:click={() => toggleSection(section)}
-				class="flex w-full items-center justify-between rounded-2xl border border-gray-400/40 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4 text-lg font-semibold backdrop-blur-md transition-all duration-300 hover:bg-white/90 dark:hover:bg-white/10"
+				class="flex w-full items-center justify-between rounded-2xl border border-gray-400/40 bg-white/70 p-4 text-lg font-semibold backdrop-blur-md transition-all duration-300 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
 			>
 				<span>{formatSectionName(section)}</span>
 				<svg
-					class="h-6 w-6 transform transition-transform duration-300 {openSections[section] ? 'rotate-180' : ''}"
+					class="h-6 w-6 transform transition-transform duration-300 {openSections[section]
+						? 'rotate-180'
+						: ''}"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M19 9l-7 7-7-7"
+					/>
 				</svg>
 			</button>
 
@@ -112,7 +137,7 @@
 				{#if getResourcesByType(section).length > 0}
 					<div
 						transition:fade={{ duration: 300 }}
-						class="mt-4 rounded-2xl border border-gray-400/40 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4 pb-3 backdrop-blur-lg"
+						class="mt-4 rounded-2xl border border-gray-400/40 bg-white/70 p-4 pb-3 backdrop-blur-lg dark:border-white/10 dark:bg-white/5"
 					>
 						<div class="scrollbar-custom flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
 							{#each getResourcesByType(section) as resource}
@@ -123,9 +148,9 @@
 									on:keypress={(e) => {
 										if (e.key === 'Enter' || e.key === ' ') handleResourceClick(section, resource);
 									}}
-									class="w-60 shrink-0 cursor-pointer snap-start rounded-2xl border border-gray-400/40 dark:border-white/10 bg-white/80 dark:bg-white/10 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500"
+									class="w-60 shrink-0 cursor-pointer snap-start rounded-2xl border border-gray-400/40 bg-white/80 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500 dark:border-white/10 dark:bg-white/10"
 								>
-									{#if section === 'video'}
+									{#if section === 'video' && 'thumbnail' in resource && resource.thumbnail}
 										<img
 											src={resource.thumbnail}
 											alt={resource.title}
@@ -133,14 +158,25 @@
 											class="mb-2 h-32 w-full scale-105 rounded-lg object-cover transition-transform duration-300 hover:scale-107"
 										/>
 									{/if}
-									<h3 class="truncate text-base font-semibold text-gray-800 dark:text-white">{resource.title}</h3>
-									<p class="text-sm text-gray-600 dark:text-gray-300 capitalize">{resource.type}</p>
+									<h3 class="truncate text-base font-semibold text-gray-800 dark:text-white">
+										{resource.title}
+									</h3>
+									{#if section === 'finalExam' || section === 'midExam'}
+										<p class="text-sm text-gray-600 dark:text-gray-300">{resource.description}</p>
+										<p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+											Duration: {resource.duration} min
+										</p>
+									{:else}
+										<p class="text-sm text-gray-600 capitalize dark:text-gray-300">
+											{resource.type}
+										</p>
+									{/if}
 								</div>
 							{/each}
 						</div>
 						<a
-							href={`/course/${course.id}/${section}`}
-							class="mt-4 block text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+							href={getMoreLink(section)}
+							class="mt-4 block text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
 						>
 							More {formatSectionName(section)} →
 						</a>

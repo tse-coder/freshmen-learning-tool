@@ -1,6 +1,7 @@
 import { defineConfig } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
 export default defineConfig({
+  darkMode: 'class',
   content: [
     './src/**/*.{html,js,svelte,ts}',
     './src/routes/**/*.{svelte,ts}',

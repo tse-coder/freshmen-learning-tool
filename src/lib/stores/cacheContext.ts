@@ -1,6 +1,12 @@
 import { writable, get, type Writable } from 'svelte/store';
-import type { Course, Resource, VideoResource } from '../../types/types';
-import { fetchCourses, fetchAllResources, fetchVideos } from '../../api/fetcher';
+import type { Course, ExamResource, Resource, VideoResource } from '../../types/types';
+import {
+	fetchCourses,
+	fetchAllResources,
+	fetchVideos,
+	fetchExams,
+	fetchExamsByCourseId
+} from '../../api/fetcher';
 
 // Central caches
 export const coursesCache: Writable<Course[] | null> = writable(null);
@@ -8,6 +14,8 @@ export const coursesCache: Writable<Course[] | null> = writable(null);
 export const resourcesCache: Writable<Record<string, Resource[]>> = writable({});
 // videosCache maps courseId -> VideoResource[]
 export const videosCache: Writable<Record<string, VideoResource[]>> = writable({});
+// examsCache maps courseId -> ExamResource[]
+export const examsCache: Writable<Record<string, ExamResource[]>> = writable({});
 
 export async function ensureCourses(): Promise<Course[]> {
 	const current = get(coursesCache);
@@ -61,4 +69,18 @@ export async function ensureAllCourseResources(courseId: string): Promise<Resour
 	resMap[courseId] = combined;
 	resourcesCache.set({ ...resMap });
 	return combined;
+}
+
+export async function ensureExams(courseId: string): Promise<ExamResource[]> {
+	const map = get(examsCache);
+	if (map && map[courseId] && Array.isArray(map[courseId]) && map[courseId].length > 0) {
+		return map[courseId];
+	}
+	const exams = await fetchExamsByCourseId(courseId);
+	examsCache.update((current) => {
+		const next = { ...(current || {}) };
+		next[courseId] = exams;
+		return next;
+	});
+	return exams;
 }
