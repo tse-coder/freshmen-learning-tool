@@ -68,6 +68,14 @@
       : scoreRatio >= 0.5
       ? 'Good'
       : 'Lazy';
+
+  function goBack() {
+    if (history.length > 1) {
+      history.back();
+      return;
+    }
+    window.location.href = '/courses';
+  }
 </script>
 
 <div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -195,7 +203,7 @@
                   Q{index + 1}: {question.question}
                 </h2>
                 <p class="text-sm text-gray-700 dark:text-gray-200">
-                  Your Answer: {answers[question.id]} (Correct: {question.correct})
+                  Your Answer: {answers[question.id]} (Correct: {question.answer})
                 </p>
               </div>
             {:else}
@@ -205,6 +213,7 @@
                   Q{index + 1}: {question.question}
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-300">No Answer</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Correct Answer: {question.answer}</p>
               </div>
             {/if}
           {:else}
@@ -216,6 +225,9 @@
               <p class="text-sm text-gray-700 dark:text-gray-200">
                 Your Answer: {answers[question.id] || 'No Answer'}
               </p>
+              <p class="text-sm text-gray-700 dark:text-gray-200">
+                Correct Answer: {question.answer}
+              </p>
             </div>
           {/if}
         {/each}
@@ -223,9 +235,9 @@
 
       <button
         class="px-6 py-3 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition"
-        on:click={() => (window.location.href = '/courses')}
+        on:click={goBack}
       >
-        Back to Courses
+        Back to exams
       </button>
     </div>
   {/if}

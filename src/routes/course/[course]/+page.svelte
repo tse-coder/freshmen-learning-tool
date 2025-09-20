@@ -85,7 +85,7 @@
 
 	function handleResourceClick(section: string, resource: NormalizedResource | NormalizedExam) {
 		if ((section === 'module' || section === 'shortNote') && 'url' in resource && resource.url) {
-			window.location.href = resource.url;
+			window.open(resource.url, '_blank'); // opens in a new tab
 		} else if (section === 'video') {
 			window.location.href = `${course.id}/video-player/${resource.id}`;
 		} else if (section === 'finalExam' || section === 'midExam') {

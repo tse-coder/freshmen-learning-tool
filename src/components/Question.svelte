@@ -10,7 +10,7 @@
 {#if q}
   <div class="flex flex-col w-full h-full">
     <!-- Question Title -->
-    <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3 text-center">
+    <h2 class="text-lg sm:text-xl text-gray-800 dark:text-gray-100 mb-3">
       Q{currentIndex + 1}: {q.question}
     </h2>
     <hr class="border-gray-300 dark:border-gray-600 mb-4" />
