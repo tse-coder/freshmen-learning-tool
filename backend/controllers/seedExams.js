@@ -53,7 +53,6 @@ Requirements:
 
     let raw = result.response.text();
     raw = raw.replace(/```json\s*/g, "").replace(/```/g, "").trim();
-    console.log("🤖 Gemini raw response:", raw);
 
     const json = JSON.parse(raw);
     return json;
@@ -78,27 +77,16 @@ async function processExam(course, pdfPath) {
     : "unknown";
   console.log(`📌 Detected exam type: ${examType}`);
 
-  const { duration, questions } = await extractQuestionsWithGemini(pdfPath);
-
-  console.log(`⏱ Estimated duration: ${duration} min`);
-  console.log(`🤖 Extracted ${questions.length} questions`);
-
-  if (!questions.length) {
-    console.warn("⚠️ No questions extracted, skipping:", pdfPath);
-    return;
-  }
-
-  // Insert exam record (but first check if it already exists)
+  // Check if exam already exists (matching course, title and type)
   const payload = {
     course_id: course.id,
     title: path.basename(pdfPath, ".pdf"),
     type: examType,
-    duration,
+    duration: 60, // Placeholder for now
     description: `Exam extracted from ${path.basename(pdfPath)}`,
   };
 
   try {
-    // Check if exam already exists (matching course, title and type)
     const { data: existing, error: fetchErr } = await supabase
       .from("exams")
       .select()
@@ -119,45 +107,60 @@ async function processExam(course, pdfPath) {
     return;
   }
 
-  const { data: exam, error } = await supabase
-    .from("exams")
-    .insert([payload])
-    .select()
-    .single();
+  const { duration, questions } = await extractQuestionsWithGemini(pdfPath);
 
-  if (error) {
-    console.error("❌ Failed to insert exam:", error);
+  console.log(`⏱ Estimated duration: ${duration} min`);
+  console.log(`🤖 Extracted ${questions.length} questions`);
+
+  if (!questions.length) {
+    console.warn("⚠️ No questions extracted, skipping:", pdfPath);
     return;
   }
-  console.log(`✅ Inserted exam: ${exam.title} (${exam.id})`);
 
-  // Insert questions
-  const records = questions.map((q) => {
-    let qType = q.type?.toLowerCase();
+  // Insert exam record into the database
+  try {
+    const { data: exam, error } = await supabase
+      .from("exams")
+      .insert([payload])
+      .select()
+      .single();
 
-    if (qType === "mcq" || qType === "true/false") {
-      qType = "multiple_choice";
-    } else if (qType === "short") {
-      qType = "fill_in_blank";
-    } else {
-      // fallback to multiple_choice
-      qType = "multiple_choice";
+    if (error) {
+      console.error("❌ Failed to insert exam:", error);
+      return;
     }
+    console.log(`✅ Inserted exam: ${exam.title} (${exam.id})`);
 
-    return {
-      exam_id: exam.id,
-      question: String(q.question),
-      type: qType,
-      options: q.options || null,
-      answer: String(q.answer).trim(),
-    };
-  });
+    // Insert questions
+    const records = questions.map((q) => {
+      let qType = q.type?.toLowerCase();
 
-  const { error: qError } = await supabase.from("exam_questions").insert(records);
-  if (qError) {
-    console.error("❌ Failed to insert questions:", qError);
-  } else {
-    console.log(`✅ Inserted ${records.length} questions for ${course.name} ${examType} exam`);
+      if (qType === "mcq" || qType === "true/false") {
+        qType = "multiple_choice";
+      } else if (qType === "short") {
+        qType = "fill_in_blank";
+      } else {
+        // fallback to multiple_choice
+        qType = "multiple_choice";
+      }
+
+      return {
+        exam_id: exam.id,
+        question: String(q.question),
+        type: qType,
+        options: q.options || null,
+        answer: String(q.answer).trim(),
+      };
+    });
+
+    const { error: qError } = await supabase.from("exam_questions").insert(records);
+    if (qError) {
+      console.error("❌ Failed to insert questions:", qError);
+    } else {
+      console.log(`✅ Inserted ${records.length} questions for ${course.name} ${examType} exam`);
+    }
+  } catch (err) {
+    console.error("❌ Unexpected error while inserting exam or questions:", err);
   }
 }
 
