@@ -53,7 +53,7 @@
 
 <div>
 	<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
-	{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam')}
+	{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/')}
 		<TopPanel title={$pageTitle} />
 	{/if}
 
