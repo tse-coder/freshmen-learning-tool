@@ -85,7 +85,13 @@
 
 	function handleResourceClick(section: string, resource: NormalizedResource | NormalizedExam) {
 		if ((section === 'module' || section === 'shortNote') && 'url' in resource && resource.url) {
-			window.open(resource.url, '_blank'); // opens in a new tab
+			if (window.Telegram && window.Telegram.WebApp) {
+				// Open in external browser (outside Telegram webview)
+				window.Telegram.WebApp.openLink(resource.url);
+			} else {
+				// Fallback for normal browsers
+				window.open(resource.url, '_blank', 'noopener,noreferrer');
+			}
 		} else if (section === 'video') {
 			window.location.href = `${course.id}/video-player/${resource.id}`;
 		} else if (section === 'finalExam' || section === 'midExam') {
@@ -94,6 +100,7 @@
 			window.location.href = `${course.id}/${section}/${resource.id}`;
 		}
 	}
+
 	function getMoreLink(section: string) {
 		if (section === 'midExam') {
 			return `/course/${course.id}/exams?tab=mid`;

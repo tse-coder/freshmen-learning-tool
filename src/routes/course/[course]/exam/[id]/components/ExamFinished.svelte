@@ -4,7 +4,7 @@
 
   $: totalQuestions = data.examQuestions.length;
   $: correctAnswers = data.examQuestions.filter(
-    (q: any) => answers[q.id] && answers[q.id].trim().toLowerCase() === q.answer.trim().toLowerCase()
+    (q: any) => answers[q.id] && answers[q.id].trim().toLowerCase() === q.answer.trim().toLowerCase() && q.options.length > 0
   ).length;
 
   $: scoreRatio = totalQuestions > 0 ? correctAnswers / totalQuestions : 0;
@@ -28,13 +28,13 @@
          bg-white/40 dark:bg-gray-800/50 backdrop-blur-md 
          border border-white/20 dark:border-white/10"
 >
-  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Exam Overview</h1>
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Exam Overview</h1>
 
   <!-- Result -->
   <div
     class="w-full text-center p-4 rounded-md 
            bg-white/40 dark:bg-gray-700/50 border border-white/20 dark:border-white/10
-           text-lg font-semibold text-gray-800 dark:text-gray-100"
+           text-lg font-semibold text-gray-800 dark:text-gray-200"
   >
     Result: {correctAnswers}/{totalQuestions} correct → 
     <span class="font-bold">{rating}</span>
@@ -45,20 +45,20 @@
     {#each data.examQuestions as question, index}
       {#if answers[question.id] && answers[question.id].trim().toLowerCase() === question.answer.trim().toLowerCase()}
         <!-- Correct -->
-        <div class="p-4 rounded-md bg-green-100 dark:bg-green-800/40 border border-green-300 dark:border-green-600">
+        <div class="p-4 rounded-md bg-green-100 dark:bg-green-800/40 border border-green-300 dark:border-green-600 text-gray-800 dark:text-gray-200">
           <h2 class="font-semibold">Q{index + 1}: {question.question}</h2>
           <p>Your Answer: {answers[question.id]}</p>
         </div>
       {:else if answers[question.id]}
         <!-- Incorrect -->
-        <div class="p-4 rounded-md bg-red-100 dark:bg-red-800/40 border border-red-300 dark:border-red-600">
+        <div class="p-4 rounded-md bg-red-100 dark:bg-red-800/40 border border-red-300 dark:border-red-600 text-gray-800 dark:text-gray-200">
           <h2 class="font-semibold">Q{index + 1}: {question.question}</h2>
           <p>Your Answer: {answers[question.id]}</p>
           <p>Correct Answer: {question.answer}</p>
         </div>
       {:else}
         <!-- No Answer -->
-        <div class="p-4 rounded-md bg-gray-100 dark:bg-gray-700/40 border border-gray-300 dark:border-gray-600">
+        <div class="p-4 rounded-md bg-slate-100 dark:bg-slate-700/40 border border-slate-300 dark:border-slate-600 text-gray-800 dark:text-gray-200">
           <h2 class="font-semibold">Q{index + 1}: {question.question}</h2>
           <p>No Answer</p>
           <p>Correct Answer: {question.answer}</p>
