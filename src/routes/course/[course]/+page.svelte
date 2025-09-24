@@ -86,8 +86,13 @@
 	function handleResourceClick(section: string, resource: NormalizedResource | NormalizedExam) {
 		if ((section === 'module' || section === 'shortNote') && 'url' in resource && resource.url) {
 			if (window.Telegram && window.Telegram.WebApp) {
-				// Open in external browser (outside Telegram webview)
-				window.Telegram.WebApp.openLink(resource.url);
+				// Try to force external opening
+				const newWindow = window.open(resource.url, '_blank', 'noopener,noreferrer');
+
+				if (!newWindow) {
+					// Popup blocked or Telegram WebView prevented it
+					alert('Please open this PDF in your browser: ' + resource.url);
+				}
 			} else {
 				// Fallback for normal browsers
 				window.open(resource.url, '_blank', 'noopener,noreferrer');
