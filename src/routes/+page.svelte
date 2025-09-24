@@ -7,9 +7,9 @@
 	import { ensureCourses } from '$lib/stores/cacheContext';
 	import Error from '../components/Error.svelte';
 
-	let userName: string = 'User';
-	let loadingCourses: boolean = false;
-	let error: boolean = false;
+	$:userName = 'User';
+	$:loadingCourses = false;
+	$:error = false;
 
 	onMount(() => {
 		setPageTitle('FreshHub');
