@@ -1,4 +1,4 @@
-import { supabase } from '../supabase/client.js';
+import { supabase } from '../../config/supabase/client.js';
 
 export const getCourses = async () => {
 	const { data, error } = await supabase.from('courses').select('*');

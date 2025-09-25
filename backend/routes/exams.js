@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllExams, getExamDataByCourseId } from '../controllers/exams.js';
+import { getAllExams, getExamDataByCourseId } from '../../src/api/controllers/exams.js';
 const router = express.Router();
 
 // Route to fetch exam data by ID

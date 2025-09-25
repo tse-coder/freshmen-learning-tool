@@ -25,12 +25,7 @@
 		if (!isExam && type !== 'video' && url) {
 			e.preventDefault(); // prevent normal <a> behavior
 			// Try to force external opening
-			const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-
-			if (!newWindow) {
-				// Popup blocked or Telegram WebView prevented it
-				alert('Please open this PDF in your browser: ' + url);
-			}
+			window.open(url, '_blank', 'noopener,noreferrer');
 		}
 	}
 </script>

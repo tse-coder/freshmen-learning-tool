@@ -34,12 +34,14 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@google/generative-ai": "^0.24.1",
 		"@pdftron/pdfjs-express-viewer": "^8.7.5",
 		"cookie-parser": "^1.4.7",
 		"dotenv": "^17.2.1",
 		"lottie-web": "^5.13.0",
 		"pdfjs-dist": "^5.4.54",
 		"svelte-pdf-simple": "^2.0.0",
-		"svelte-youtube-lite": "^1.2.1"
+		"svelte-youtube-lite": "^1.2.1",
+		"telegraf": "^4.16.3"
 	}
 }

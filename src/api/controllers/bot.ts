@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new Telegraf(token);
+const bot = new Telegraf(token || '');
 
-bot.start((ctx) => {
+bot.start((ctx: any) => {
 	ctx.reply(`Welcome <b><strong>${ctx.from.first_name}</strong></b>!`);
 });
 

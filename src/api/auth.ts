@@ -1,14 +1,10 @@
-// src/api/auth.ts
-// Small client helpers to call backend auth endpoints.
-
-import { SERVER_URL } from "../config/env";
-
+// Small client helpers to call serverless auth endpoints.
 
 async function postJson(path: string, body: any) {
-	const res = await fetch(`${SERVER_URL}${path}`, {
+	const res = await fetch(`/api${path}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		credentials: 'include',
+		credentials: 'include', // still useful if you set cookies in your endpoint
 		body: JSON.stringify(body)
 	});
 	const data = await res.json().catch(() => ({}));

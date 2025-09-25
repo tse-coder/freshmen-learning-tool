@@ -1,8 +1,8 @@
-import { SERVER_URL } from '../config/env';
 import type { Course } from '../types/types';
+
 export const fetchCourses = async (): Promise<Course[]> => {
 	try {
-		const res = await fetch(`${SERVER_URL}/courses`);
+		const res = await fetch('/api/courses');
 		if (!res.ok) throw new Error('Failed to fetch courses');
 		const courses = await res.json();
 
@@ -33,14 +33,13 @@ export const fetchCourses = async (): Promise<Course[]> => {
 
 export const fetchResources = async (courseId: string, type: string) => {
 	try {
-		const url = new URL(`${SERVER_URL}/resources`);
+		const url = new URL('/api/resources', window.location.origin);
 		url.searchParams.append('courseId', courseId);
 		url.searchParams.append('type', type);
 
 		const res = await fetch(url.toString());
 		if (!res.ok) throw new Error('Failed to fetch resources');
-		const data = await res.json();
-		return data;
+		return await res.json();
 	} catch (error) {
 		console.error('Error fetching resources:', error);
 		return [];
@@ -49,13 +48,12 @@ export const fetchResources = async (courseId: string, type: string) => {
 
 export const fetchAllResources = async (courseId: string) => {
 	try {
-		const url = new URL(`${SERVER_URL}/resources`);
+		const url = new URL('/api/resources', window.location.origin);
 		url.searchParams.append('courseId', courseId);
 
 		const res = await fetch(url.toString());
 		if (!res.ok) throw new Error('Failed to fetch resources');
-		const data = await res.json();
-		return data;
+		return await res.json();
 	} catch (error) {
 		console.error('Error fetching all resources:', error);
 		return [];
@@ -64,13 +62,12 @@ export const fetchAllResources = async (courseId: string) => {
 
 export const fetchVideos = async (courseId: string) => {
 	try {
-		const url = new URL(`${SERVER_URL}/videos`);
+		const url = new URL('/api/videos', window.location.origin);
 		url.searchParams.append('courseId', courseId);
 
 		const res = await fetch(url.toString());
 		if (!res.ok) throw new Error('Failed to fetch videos');
-		const data = await res.json();
-		return data;
+		return await res.json();
 	} catch (error) {
 		console.error('Error fetching videos:', error);
 		return [];
@@ -79,13 +76,12 @@ export const fetchVideos = async (courseId: string) => {
 
 export const fetchVideoById = async (videoId: string) => {
 	try {
-		const url = new URL(`${SERVER_URL}/videos`);
+		const url = new URL('/api/videos', window.location.origin);
 		url.searchParams.append('videoId', videoId);
 
 		const res = await fetch(url.toString());
 		if (!res.ok) throw new Error('Failed to fetch video');
-		const data = await res.json();
-		return data;
+		return await res.json();
 	} catch (error) {
 		console.error('Error fetching video by id:', error);
 		return null;
@@ -93,35 +89,38 @@ export const fetchVideoById = async (videoId: string) => {
 };
 
 export const fetchExamsByCourseId = async (courseId: string) => {
-  try {
-    const url = new URL(`${SERVER_URL}/exams?courseId=${courseId}`);
-
-    const res = await fetch(url.toString());
-    if (!res.ok) throw new Error('Failed to fetch exams');
-
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching exams:', error);
-    throw error;
-  }
-}
-
-export const fetchExams = async () => {
-  try {
-    const res = await fetch(`${SERVER_URL}/exams/all`);
-    if (!res.ok) throw new Error('Failed to fetch exams');
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching exams:', error);
-    throw error;
-  }
-};
-
-export const fetchQuestionsByExamId = async(examId:string)=>{
 	try {
-		const res = await fetch(`${SERVER_URL}/questions?examId=${examId}`)
-		return res.json();
+		const url = new URL('/api/exams', window.location.origin);
+		url.searchParams.append('courseId', courseId);
+
+		const res = await fetch(url.toString());
+		if (!res.ok) throw new Error('Failed to fetch exams');
+
+		return await res.json();
 	} catch (error) {
+		console.error('Error fetching exams:', error);
 		throw error;
 	}
-}
+};
+
+export const fetchExams = async () => {
+	try {
+		const res = await fetch('/api/exams/all');
+		if (!res.ok) throw new Error('Failed to fetch exams');
+		return await res.json();
+	} catch (error) {
+		console.error('Error fetching exams:', error);
+		throw error;
+	}
+};
+
+export const fetchQuestionsByExamId = async (examId: string) => {
+	try {
+		const res = await fetch(`/api/questions?examId=${examId}`);
+		if (!res.ok) throw new Error('Failed to fetch questions');
+		return await res.json();
+	} catch (error) {
+		console.error('Error fetching questions:', error);
+		throw error;
+	}
+};

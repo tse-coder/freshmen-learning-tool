@@ -7,9 +7,9 @@
 	import { ensureCourses } from '$lib/stores/cacheContext';
 	import Error from '../components/Error.svelte';
 
-	$:userName = 'User';
-	$:loadingCourses = false;
-	$:error = false;
+	$: userName = ' 👋';
+	$: loadingCourses = false;
+	$: error = false;
 
 	onMount(() => {
 		setPageTitle('FreshHub');
@@ -34,46 +34,54 @@
 		}
 	}
 </script>
-<div class="flex min-h-screen flex-col 
-  bg-gradient-to-br from-gray-50 via-white to-gray-100 
-  text-gray-900
-  dark:from-gray-900 dark:via-black dark:to-gray-800 dark:text-white
-  px-2 pt-3 pb-20">
 
-  {#if error}
-    <Error onClose={() => {error = false}} message={"Couldn't fetch courses!"}/>
-  {:else}
-    <div class="flex-1 flex flex-col items-center justify-center mx-auto w-full max-w-lg 
-      rounded-2xl border border-black/10 bg-white/70 
-      shadow-2xl backdrop-blur-lg gap-6
-      dark:border-white/10 dark:bg-white/5 p-6">
-      
-      <h1 class="text-3xl text-center">Welcome, {userName}!</h1>
-      <p class="text-center text-gray-600 dark:text-gray-300">
-        Access course modules, short notes, quizzes, and videos tailored for freshmen.
-      </p>
-      <Slider/>
-    </div>
+<div
+	class="flex min-h-screen flex-col
+  bg-gradient-to-br from-gray-50 via-white to-gray-100
+  px-2
+  pt-3 pb-20 text-gray-900 dark:from-gray-900
+  dark:via-black dark:to-gray-800 dark:text-white"
+>
+	{#if error}
+		<Error
+			onClose={() => {
+				error = false;
+			}}
+			message={"Couldn't fetch courses!"}
+		/>
+	{:else}
+		<div
+			class="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center
+      gap-6 rounded-2xl border border-black/10
+      bg-white/70 p-6 shadow-2xl
+      backdrop-blur-lg dark:border-white/10 dark:bg-white/5"
+		>
+			<h1 class="text-center text-3xl">Hi, {userName}!</h1>
+			<p class="text-center text-gray-600 dark:text-gray-300">
+				Access course modules, short notes, quizzes, and videos tailored for freshmen.
+			</p>
+			<Slider />
+		</div>
 
-    <!-- Get Started button fixed at bottom -->
-    <div class="absolute bottom-0 right-0 left-0 p-2 bg-gray-100 dark:bg-gray-950 shadow-md">
-      <div class="w-full py-4 text-lg font-semibold rounded-lg 
-        bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md transition 
-        flex items-center justify-center text-white">
-        
-        {#if loadingCourses}
-          <Loader small={true} message="Loading courses..." />
-        {:else}
-          <button
-            on:click={viewCourses}
-            class="flex-1 cursor-pointer hover:from-blue-700 hover:to-indigo-700"
-            disabled={loadingCourses}
-          >
-            Get Started
-          </button>
-        {/if}
-      </div>
-    </div>
-  {/if}
+		<!-- Get Started button fixed at bottom -->
+		<div class="absolute right-0 bottom-0 left-0 bg-gray-100 p-2 shadow-md dark:bg-gray-950">
+			<div
+				class="flex w-full items-center justify-center rounded-lg
+        bg-gradient-to-r from-blue-600 to-indigo-600 py-4 text-lg
+        font-semibold text-white shadow-md transition"
+			>
+				{#if loadingCourses}
+					<Loader small={true} message="Loading courses..." />
+				{:else}
+					<button
+						on:click={viewCourses}
+						class="flex-1 cursor-pointer hover:from-blue-700 hover:to-indigo-700"
+						disabled={loadingCourses}
+					>
+						Get Started
+					</button>
+				{/if}
+			</div>
+		</div>
+	{/if}
 </div>
-

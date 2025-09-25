@@ -2,7 +2,7 @@ import express from 'express';
 import {
 	getAllResourcesByCourseId,
 	getResourcesByCourseIdandType
-} from '../controllers/resources.js';
+} from '../../src/api/controllers/resources.js';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getVideosByCourseId } from '../controllers/videos.js';
+import { getVideosByCourseId } from '../../src/api/controllers/videos.js';
 
 const router = express.Router();
 

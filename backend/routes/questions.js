@@ -1,5 +1,5 @@
 import express from 'express'
-import { getExamQuestions } from '../controllers/questions.js';
+import { getExamQuestions } from '../../src/api/controllers/questions.js';
 
 const router = express.Router();
 

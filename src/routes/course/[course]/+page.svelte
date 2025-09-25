@@ -1,4 +1,5 @@
 <script lang="ts">
+	// @ts-nocheck
 	import { fade } from 'svelte/transition';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
@@ -6,7 +7,7 @@
 
 	export let data: PageData;
 	const { course, resources, exams } = data as any;
-
+	console.log(course);
 	// --- Normalize resources ---
 	type NormalizedResource = {
 		id: string;
@@ -87,12 +88,7 @@
 		if ((section === 'module' || section === 'shortNote') && 'url' in resource && resource.url) {
 			if (window.Telegram && window.Telegram.WebApp) {
 				// Try to force external opening
-				const newWindow = window.open(resource.url, '_blank', 'noopener,noreferrer');
-
-				if (!newWindow) {
-					// Popup blocked or Telegram WebView prevented it
-					alert('Please open this PDF in your browser: ' + resource.url);
-				}
+				window.open(resource.url, '_blank', 'noopener,noreferrer');
 			} else {
 				// Fallback for normal browsers
 				window.open(resource.url, '_blank', 'noopener,noreferrer');
@@ -163,18 +159,18 @@
 									class="w-60 shrink-0 cursor-pointer snap-start rounded-2xl border border-gray-400/40 bg-white/80 p-4 backdrop-blur-lg transition duration-300 hover:shadow-2xl focus:outline focus:outline-2 focus:outline-blue-500 dark:border-white/10 dark:bg-white/10"
 								>
 									{#if section === 'video' && 'thumbnail' in resource && resource.thumbnail}
-										<img
-											src={resource.thumbnail}
-											alt={resource.title}
-											loading="lazy"
-											class="mb-2 h-32 w-full scale-105 rounded-lg object-cover transition-transform duration-300 hover:scale-107"
-										/>
+										<div class="relative h-36 w-full overflow-hidden rounded-t-md">
+											<img
+												src={resource.thumbnail}
+												alt={resource.title}
+												class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+											/>
+										</div>
 									{/if}
 									<h3 class="truncate text-base font-semibold text-gray-800 dark:text-white">
 										{resource.title}
 									</h3>
 									{#if section === 'finalExam' || section === 'midExam'}
-										<p class="text-sm text-gray-600 dark:text-gray-300">{resource.description}</p>
 										<p class="text-sm font-medium text-gray-700 dark:text-gray-300">
 											Duration: {resource.duration} min
 										</p>
