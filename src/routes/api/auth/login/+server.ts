@@ -1,11 +1,18 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { verifyTelegramInitData } from '../../../../../backend/utils/verifyTelegram';
+import { createClient } from '@supabase/supabase-js';
 
-// POST /api/auth/login
+// Initialize Supabase client with service key (keep it server-side only)
+const supabase = createClient(
+	process.env.SUPABASE_URL!,
+	process.env.SUPABASE_SERVICE_ROLE_KEY! // use service key ONLY in backend
+);
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { initData } = await request.json();
 
+		// 1. Verify Telegram init data
 		const user = verifyTelegramInitData(initData);
 
 		if (!user) {
@@ -14,11 +21,35 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 		}
 
-		// TODO: Check if user exists in DB and return session/JWT
-		return new Response(JSON.stringify({ ok: true, user }), {
+		// 2. Upsert user into Supabase
+		const { data, error } = await supabase
+			.from('users')
+			.upsert({
+				id: user.id,
+				first_name: user.first_name,
+				last_name: user.last_name,
+				username: user.username,
+				language_code: user.language_code,
+				photo_url: user.photo_url,
+				last_seen: new Date().toISOString(),
+				data: user // full JSON user object for future flexibility
+			})
+			.select()
+			.single();
+
+		if (error) {
+			console.error('Supabase upsert error:', error);
+			return new Response(JSON.stringify({ ok: false, error: 'Database error' }), {
+				status: 500
+			});
+		}
+
+		// 3. Return user (from DB for consistency)
+		return new Response(JSON.stringify({ ok: true, user: data }), {
 			headers: { 'Content-Type': 'application/json' }
 		});
 	} catch (err) {
+		console.error('Login error:', err);
 		return new Response(JSON.stringify({ ok: false, error: 'Bad request' }), { status: 400 });
 	}
 };
