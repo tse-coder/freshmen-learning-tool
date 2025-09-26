@@ -15,7 +15,7 @@
 		autoplay={true}
 		loop={true}
 		rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
-		className="w-7 h-7 mb-2"
+		className="w-5 h-5 mb-2"
 	/>
 	<div>{message}</div>
 </div>
