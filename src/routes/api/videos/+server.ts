@@ -1,4 +1,3 @@
-import { error } from '@sveltejs/kit';
 import { jsonResponse } from '../../../utils/jsonify.js';
 import { getVideosByCourseId } from '../../../api/controllers/videos';
 
