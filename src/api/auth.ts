@@ -1,7 +1,10 @@
 // Small client helpers to call serverless auth endpoints.
 
-async function postJson(path: string, body: any) {
-	const res = await fetch(`/api${path}`, {
+import { getFetcher, type FetchFn } from './fetcher';
+
+async function postJson(path: string, body: any, fetchFn?: FetchFn) {
+	const fetcher = getFetcher(fetchFn);
+	const res = await fetcher(`/api${path}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		credentials: 'include', // still useful if you set cookies in your endpoint

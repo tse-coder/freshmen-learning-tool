@@ -7,7 +7,12 @@
 	import { setPageTitle } from '../../../../lib/stores/uiStore';
 	import type { Resource } from '../../../../types/types';
 
-	export let data: { course: string; resourceType: string; resources: Resource[] };
+	export let data: {
+		course: string;
+		resourceType: string;
+		resources: Resource[];
+		courseId: string;
+	};
 
 	let selectedVideo: string | null = null;
 	let activeCategory: string = 'All';
@@ -36,10 +41,14 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 text-gray-900 dark:from-black dark:via-gray-900 dark:to-gray-950 dark:text-white px-6 pt-27 relative">
-	<div class="fixed top-0 left-0 right-0 p-5 z-8 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-lg shadow-md mt-15">
+<div
+	class="relative min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 px-6 pt-27 text-gray-900 dark:from-black dark:via-gray-900 dark:to-gray-950 dark:text-white"
+>
+	<div
+		class="fixed top-0 right-0 left-0 z-8 mt-15 rounded-lg bg-white/50 p-5 shadow-md backdrop-blur-sm dark:bg-gray-900/50"
+	>
 		<SearchBar bind:value={searchQuery} place="Search for {data.resourceType}..." />
-	
+
 		<!-- Category Tabs (for Exams) -->
 		{#if showTabs}
 			<CategoryTabs
@@ -57,5 +66,5 @@
 	{/if}
 
 	<!-- Grid of Resources -->
-	<ResourceGrid resources={filteredResources} />
+	<ResourceGrid resources={filteredResources} courseId={data.courseId} />
 </div>

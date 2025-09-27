@@ -1,7 +1,8 @@
 import { ensureExams } from '$lib/stores/cacheContext';
 import { fetchQuestionsByExamId } from '../../../../../api/fetcher';
+import type { PageLoad } from './$types';
 
-export const load = async ({ params }: { params: { course: string; id: string } }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
 	const courseId = decodeURIComponent(params.course);
 	const examId = decodeURIComponent(params.id);
 
@@ -10,16 +11,18 @@ export const load = async ({ params }: { params: { course: string; id: string } 
 	}
 
 	try {
-		const exams = await ensureExams(courseId);
-		const exam = exams.find((exam: { id: string }) => exam.id === examId);
+		// ✅ use event.fetch
+		const exams = await ensureExams(courseId, fetch);
+		const exam = exams.find((exam) => exam.id === examId);
 
 		if (!exam) {
 			throw new Error('Exam not found');
 		}
 
-		const examQuestions = await fetchQuestionsByExamId(examId);
+		// ✅ pass event.fetch here too
+		const examQuestions = await fetchQuestionsByExamId(examId, fetch);
 
-		return { examQuestions,exam };
+		return { examQuestions, exam };
 	} catch (error) {
 		console.error('Error loading exam:', error);
 		throw new Error('Failed to load exam');

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isAuthenticated, authUser, logout, loginWithTelegramInit } from '../lib/stores/auth';
+	import { isAuthenticated, authUser, loginWithTelegramInit } from '../lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
 	import OverlayLoader from './OverlayLoader.svelte';
@@ -33,8 +33,8 @@
 			if (!initData) throw { message: 'Telegram init data missing' };
 			const res = await loginWithTelegramInit(initData);
 			if (!res.ok) throw { message: res.error || 'Telegram verification failed' };
-		overlayLoading.set(false);
-		// Stay on the current page after verification
+			overlayLoading.set(false);
+			// Stay on the current page after verification
 		} catch (err) {
 			overlayLoading.set(false);
 			errorMsg = (err as any)?.message || 'Verification failed';
@@ -44,12 +44,6 @@
 
 	function toggleOpen() {
 		open.update((v) => !v);
-	}
-
-	function doLogout() {
-		logout();
-		open.set(false);
-		goto('/');
 	}
 
 	function initials(name: string) {
@@ -101,13 +95,6 @@
 						{/if}
 					</div>
 				</div>
-
-				<div class="mt-3 flex flex-col gap-2">
-					<button
-						class="w-full rounded-md border border-white/6 bg-transparent px-3 py-2 text-sm text-white"
-						on:click={doLogout}>Log out</button
-					>
-				</div>
 			</div>
 		{/if}
 	</div>
@@ -120,7 +107,13 @@
 			<OverlayLoader message={$overlayMessage} />
 		{/if}
 		{#if showError}
-			<Error message={errorMsg} onClose={() => { showError = false; goto('/') }} />
+			<Error
+				message={errorMsg}
+				onClose={() => {
+					showError = false;
+					goto('/');
+				}}
+			/>
 		{/if}
 	</div>
 {/if}

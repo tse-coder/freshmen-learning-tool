@@ -1,5 +1,6 @@
 <script lang="ts">
 	export let resource;
+	export let courseId: string;
 
 	// Normalize props depending on resource type
 	const isExam = resource.course_id && resource.duration;
@@ -7,19 +8,19 @@
 	$: id = resource.id;
 	$: title = resource.title;
 	$: type = resource.type;
-	$: description = resource.description ?? '';
-	$: courseId = resource.course_id;
+	$: courseId = courseId;
 	$: duration = resource.duration;
 	console.log(courseId);
 	$: url = !isExam ? resource.url : null;
 	$: thumbnail = !isExam ? resource.thumbnail : null;
 
 	// Destination link
-	$: href = isExam
-		? `/course/${courseId}/exam/${id}`
-		: type === 'video'
-			? `/course/${courseId}/video-player/${id}`
-			: url;
+	$: href =
+		isExam && courseId
+			? `/course/${courseId}/exam/${id}`
+			: type === 'video' && courseId
+				? `/course/${courseId}/video-player/${id}`
+				: (url ?? '#');
 
 	function openLink(e: MouseEvent) {
 		if (!isExam && type !== 'video' && url) {

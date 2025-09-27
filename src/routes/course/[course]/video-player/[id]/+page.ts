@@ -1,5 +1,5 @@
 import type { VideoResource } from '../../../../../types/types';
-import type { LoadEvent } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
 import { ensureVideos } from '../../../../../lib/stores/cacheContext';
 
 function extractYouTubeId(url: string | undefined) {
@@ -21,14 +21,17 @@ function extractYouTubeId(url: string | undefined) {
 	}
 }
 
-export async function load({ params, fetch }: LoadEvent) {
+export const load: PageLoad = async ({ params, fetch }) => {
 	const vidIdParam = params.id;
 	const vidCourse = params.course;
 
 	try {
-		const videos = await ensureVideos(String(vidCourse));
+		// ✅ pass event.fetch down
+		const videos: VideoResource[] = await ensureVideos(String(vidCourse), fetch);
+
 		const video = videos.find((v) => String(v.id) === String(vidIdParam));
 		const ytId = extractYouTubeId(video?.url);
+
 		return {
 			videoId: ytId,
 			title: video?.title ?? 'Video',
@@ -42,4 +45,4 @@ export async function load({ params, fetch }: LoadEvent) {
 			relatedVideos: []
 		};
 	}
-}
+};

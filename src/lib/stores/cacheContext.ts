@@ -4,83 +4,71 @@ import {
 	fetchCourses,
 	fetchAllResources,
 	fetchVideos,
-	fetchExams,
 	fetchExamsByCourseId
 } from '../../api/fetcher';
 
+type FetchFn = typeof fetch;
+
 // Central caches
 export const coursesCache: Writable<Course[] | null> = writable(null);
-// resourcesCache maps courseId -> Resource[]
 export const resourcesCache: Writable<Record<string, Resource[]>> = writable({});
-// videosCache maps courseId -> VideoResource[]
 export const videosCache: Writable<Record<string, VideoResource[]>> = writable({});
-// examsCache maps courseId -> ExamResource[]
 export const examsCache: Writable<Record<string, ExamResource[]>> = writable({});
 
-export async function ensureCourses(): Promise<Course[]> {
+export async function ensureCourses(fetchFn?: FetchFn): Promise<Course[]> {
 	const current = get(coursesCache);
-	if (current && Array.isArray(current) && current.length > 0) {
-		return current;
-	}
-	const fetched = await fetchCourses();
+	if (current && current.length > 0) return current;
+
+	const fetched = await fetchCourses(fetchFn);
 	coursesCache.set(fetched);
 	return fetched;
 }
 
-export async function ensureResources(courseId: string): Promise<Resource[]> {
+export async function ensureResources(courseId: string, fetchFn?: FetchFn): Promise<Resource[]> {
 	const map = get(resourcesCache);
-	if (map && map[courseId] && Array.isArray(map[courseId]) && map[courseId].length > 0)
-		return map[courseId];
-	const fetched = await fetchAllResources(courseId);
-	const next = { ...(map || {}) };
-	next[courseId] = fetched;
-	resourcesCache.set(next);
+	if (map[courseId]?.length > 0) return map[courseId];
+
+	const fetched = await fetchAllResources(courseId, fetchFn);
+	resourcesCache.set({ ...map, [courseId]: fetched });
 	return fetched;
 }
 
-export async function ensureVideos(courseId: string): Promise<VideoResource[]> {
+export async function ensureVideos(courseId: string, fetchFn?: FetchFn): Promise<VideoResource[]> {
 	const map = get(videosCache);
-	if (map && map[courseId] && Array.isArray(map[courseId]) && map[courseId].length > 0)
-		return map[courseId];
-	const fetched = await fetchVideos(courseId);
-	const next = { ...(map || {}) };
-	next[courseId] = fetched;
-	videosCache.set(next);
+	if (map[courseId]?.length > 0) return map[courseId];
+
+	const fetched = await fetchVideos(courseId, fetchFn);
+	videosCache.set({ ...map, [courseId]: fetched });
 	return fetched;
 }
 
-// Convenience: ensure both resources + videos and return merged list (videos mapped to Resource shape)
-export async function ensureAllCourseResources(courseId: string): Promise<Resource[]> {
+export async function ensureAllCourseResources(
+	courseId: string,
+	fetchFn?: FetchFn
+): Promise<Resource[]> {
 	const [resources, videos] = await Promise.all([
-		ensureResources(courseId),
-		ensureVideos(courseId)
+		ensureResources(courseId, fetchFn),
+		ensureVideos(courseId, fetchFn)
 	]);
-	const mappedVideos: Resource[] = (videos || []).map((v) => ({
+
+	const mappedVideos: Resource[] = videos.map((v) => ({
 		id: v.id,
 		title: v.title,
 		type: 'video',
 		url: v.url,
 		thumbnail: v.thumbnail || ''
 	}));
-	// Merge while avoiding duplicates by id
-	const combined = [...resources.filter((r) => r && r.id), ...mappedVideos];
-	// update resourcesCache with combined list so subsequent reads get merged view
-	const resMap = get(resourcesCache) || {};
-	resMap[courseId] = combined;
-	resourcesCache.set({ ...resMap });
+
+	const combined = [...resources.filter((r) => r?.id), ...mappedVideos];
+	resourcesCache.set({ ...get(resourcesCache), [courseId]: combined });
 	return combined;
 }
 
-export async function ensureExams(courseId: string): Promise<ExamResource[]> {
+export async function ensureExams(courseId: string, fetchFn?: FetchFn): Promise<ExamResource[]> {
 	const map = get(examsCache);
-	if (map && map[courseId] && Array.isArray(map[courseId]) && map[courseId].length > 0) {
-		return map[courseId];
-	}
-	const exams = await fetchExamsByCourseId(courseId);
-	examsCache.update((current) => {
-		const next = { ...(current || {}) };
-		next[courseId] = exams;
-		return next;
-	});
+	if (map[courseId]?.length > 0) return map[courseId];
+
+	const exams = await fetchExamsByCourseId(courseId, fetchFn);
+	examsCache.update((current) => ({ ...current, [courseId]: exams }));
 	return exams;
 }

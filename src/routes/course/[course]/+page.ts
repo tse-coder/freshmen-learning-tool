@@ -1,33 +1,33 @@
 import type { PageLoad } from './$types';
 import type { Course } from '../../../types/types';
-import { ensureCourses, ensureAllCourseResources, ensureExams } from '../../../lib/stores/cacheContext';
+import {
+	ensureCourses,
+	ensureAllCourseResources,
+	ensureExams
+} from '../../../lib/stores/cacheContext';
 
-export const load: PageLoad = async ({ params }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
 	const courseId = params.course ?? '';
 
-	// Load courses from cache or API
 	let courses: Course[] = [];
 	try {
-		courses = await ensureCourses();
+		courses = await ensureCourses(fetch);
 	} catch (err) {
 		console.error('Failed to fetch courses:', err);
 	}
 
-	const finalCourseId = courseId || (courses[0] && courses[0].id) || '';
-	const course = courses.find((c: any) => c.id === finalCourseId) ?? courses[0] ?? null;
+	const finalCourseId = courseId || courses[0]?.id || '';
+	const course = courses.find((c) => c.id === finalCourseId) ?? courses[0] ?? null;
 
-	// Ensure resources + videos are cached and merged
 	let courseResources: any[] = [];
 	let courseExams: any[] = [];
 	try {
-		courseResources = await ensureAllCourseResources(finalCourseId);
-		courseExams = await ensureExams(finalCourseId);
+		courseResources = await ensureAllCourseResources(finalCourseId, fetch);
+		courseExams = await ensureExams(finalCourseId, fetch);
 	} catch (err) {
 		console.error('Failed to ensure resources for course:', err);
-		courseResources = [];
-		courseExams = [];
 	}
-	
+
 	return {
 		course,
 		resources: courseResources,
