@@ -1,12 +1,9 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { verifyTelegramInitData } from '../../../../../backend/utils/verifyTelegram';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../../../config/supabase/client';
 
 // Initialize Supabase client with service key (keep it server-side only)
-const supabase = createClient(
-	process.env.SUPABASE_URL!,
-	process.env.SUPABASE_SERVICE_ROLE_KEY! // use service key ONLY in backend
-);
+const supabase = getSupabaseClient();
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
