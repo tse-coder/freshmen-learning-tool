@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { supabase } from '../../config/supabase/client.js';
+import { getSupabaseClient } from '../../config/supabase/client.js';
 import { coursesArray } from './data/courses.js';
 
 dotenv.config();
@@ -69,6 +69,7 @@ Requirements:
  * Process a single exam PDF
  */
 async function processExam(course: { id: string; name: string }, pdfPath: string) {
+	const supabase = getSupabaseClient();
 	console.log(`\n📂 Processing: ${course.name} | exam | ${path.basename(pdfPath)}`);
 
 	// Detect mid/final type

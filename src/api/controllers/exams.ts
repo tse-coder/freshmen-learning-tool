@@ -1,10 +1,12 @@
-import { supabase } from '../../config/supabase/client.js';
+import { getSupabaseClient } from '../../config/supabase/client.js';
+
 /**
  * Fetch exam data and its questions from Supabase
  * @param {string} examId - The ID of the exam to fetch
  * @returns {Promise<Object>} - The exam data and its questions
  */
 async function getExamDataByCourseId(courseId: string) {
+	const supabase = getSupabaseClient();
 	// Fetch exam metadata
 	const { data: exam, error: examError } = await supabase
 		.from('exams')
@@ -21,6 +23,7 @@ async function getExamDataByCourseId(courseId: string) {
  * get all exams
  */
 async function getAllExams() {
+	const supabase = getSupabaseClient();
 	const { data: exams, error } = await supabase.from('exams').select('*');
 
 	if (error) {

@@ -1,6 +1,7 @@
-import { supabase } from '../../config/supabase/client.js';
+import { getSupabaseClient } from '../../config/supabase/client.js';
 
 export const getExamQuestions = async (examId: string) => {
+	const supabase = getSupabaseClient();
 	const { data: examQuestions, error } = await supabase
 		.from('exam_questions')
 		.select('*')

@@ -1,6 +1,7 @@
-import { supabase } from '../../config/supabase/client.js';
+import { getSupabaseClient } from '../../config/supabase/client.js';
 
 export const getVideosByCourseId = async (courseId: string) => {
+	const supabase = getSupabaseClient();
 	const { data, error } = await supabase.from('videos').select('*').eq('course_id', courseId);
 
 	if (error) throw error;
@@ -8,6 +9,7 @@ export const getVideosByCourseId = async (courseId: string) => {
 };
 
 export const getVideoById = async (videoId: string) => {
+	const supabase = getSupabaseClient();
 	const { data, error } = await supabase.from('videos').select('*').eq('id', videoId).single();
 
 	if (error) throw error;
@@ -15,6 +17,7 @@ export const getVideoById = async (videoId: string) => {
 };
 
 export const getVideosByCourseAndTitle = async (courseId: string, title: string) => {
+	const supabase = getSupabaseClient();
 	const { data, error } = await supabase
 		.from('videos')
 		.select('*')

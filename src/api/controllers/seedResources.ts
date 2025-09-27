@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { supabase } from '../../config/supabase/client.js';
+import { getSupabaseClient } from '../../config/supabase/client.js';
 import { courses } from './data/courses.js';
 
 // Resolve current folder and set root folder to ../pdf
@@ -19,6 +19,7 @@ function sanitizeFileName(fileName: string) {
 
 // Upload single PDF
 async function uploadFile(courseName: string, type: string, file: string) {
+	const supabase = getSupabaseClient();
 	let storageFolder, dbType;
 	if (type === 'modules') {
 		storageFolder = 'modules';
