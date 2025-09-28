@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { pageTitle } from '../lib/stores/uiStore';
 	import { theme } from '../lib/stores/themeStore';
+	import Feedback from '../components/Feedback.svelte';
 
 	let user: any = null;
 
@@ -52,12 +53,15 @@
 </script>
 
 <div>
-	<div class="bg-gradient-pattern mask-radial-fade fixed inset-0 z-0 h-full pointer-events-none"></div>
+	<div
+		class="bg-gradient-pattern mask-radial-fade pointer-events-none fixed inset-0 z-0 h-full"
+	></div>
 	{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/')}
 		<TopPanel title={$pageTitle} />
 	{/if}
 
 	<div class="relative z-10">
 		<slot />
+		<Feedback />
 	</div>
 </div>
