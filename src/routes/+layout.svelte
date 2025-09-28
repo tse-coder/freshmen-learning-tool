@@ -62,7 +62,7 @@
 
 	<div class="relative z-10">
 		<slot />
-	        {#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/'>
+		{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/')}
 			<Feedback />
 		{/if}
 	</div>
