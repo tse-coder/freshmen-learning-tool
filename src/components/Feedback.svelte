@@ -3,6 +3,7 @@
 	import { get } from 'svelte/store';
 	import { authUser } from '../lib/stores/auth';
 	import Loader from './Loader.svelte';
+	import { clickOutside } from '$lib/actions/clickOutside';
 
 	let isExpanded = true;
 	let lastScroll = 0;
@@ -90,18 +91,27 @@
 
 	{#if showForm}
 		<div
-			class="mt-3 w-72 rounded-lg bg-gray-200 p-4 text-gray-950 shadow-xl dark:bg-gray-800 dark:text-white"
+			class="mt-3 w-72 rounded-lg bg-gray-100 p-4 text-gray-800 shadow-xl
+           dark:bg-gray-900 dark:text-gray-100"
+			use:clickOutside={() => (showForm = false)}
 		>
 			<div class="flex w-full justify-between">
 				<h3 class="mb-2 font-semibold">Your Feedback</h3>
-				<button class="text-sm text-gray-300 hover:text-white" on:click={() => (showForm = false)}>
+				<button
+					class="text-sm text-gray-600 hover:text-gray-800
+                   dark:text-gray-400 dark:hover:text-gray-200"
+					on:click={() => (showForm = false)}
+				>
 					Close
 				</button>
 			</div>
+
 			<textarea
 				bind:value={feedbackText}
 				rows="3"
-				class="w-full rounded-md bg-transparent p-2 text-sm text-black dark:text-white"
+				class="w-full rounded-md bg-transparent p-2 text-sm
+               text-gray-800 placeholder-gray-500
+               dark:text-gray-100 dark:placeholder-gray-400"
 				placeholder="Write your feedback..."
 			></textarea>
 
@@ -110,7 +120,9 @@
 					<Loader small={true} message="Sending..." />
 				{:else}
 					<button
-						class="rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1 text-sm font-medium text-white shadow hover:from-blue-600 hover:to-indigo-700"
+						class="rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-1
+                       text-sm font-medium text-white shadow
+                       hover:from-blue-600 hover:to-indigo-700"
 						on:click={submitFeedback}
 					>
 						Submit
@@ -119,10 +131,12 @@
 			</div>
 
 			{#if success}
-				<p class="mt-2 text-sm text-green-400">✅ Thanks for your feedback!</p>
+				<p class="mt-2 text-sm text-green-600 dark:text-green-400">✅ Thanks for your feedback!</p>
 			{/if}
 			{#if error}
-				<p class="mt-2 text-sm text-red-400">error</p>
+				<p class="mt-2 text-sm text-red-600 dark:text-red-400">
+					⚠️ {error}
+				</p>
 			{/if}
 		</div>
 	{/if}

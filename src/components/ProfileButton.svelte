@@ -6,6 +6,7 @@
 	import OverlayLoader from './OverlayLoader.svelte';
 	import { overlayLoading, overlayMessage } from '../lib/stores/overlayLoader';
 	import Error from './Error.svelte';
+	import { clickOutside } from '$lib/actions/clickOutside';
 
 	let authed = false;
 	let user: any = null;
@@ -75,6 +76,7 @@
 		{#if $open}
 			<div
 				class="absolute right-0 mt-2 w-56 rounded-lg border border-white/10 bg-gradient-to-br from-gray-900/90 to-gray-800/90 p-3 shadow-lg"
+				use:clickOutside={() => open.set(false)}
 			>
 				<div class="flex items-center gap-3">
 					{#if user.photo_url}
