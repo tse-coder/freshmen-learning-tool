@@ -8,6 +8,7 @@
 	let isExpanded = true;
 	let lastScroll = 0;
 	let showForm = false;
+	let feedbackTitle = '';
 	let feedbackText = '';
 	let loading = false;
 	let success = false;
@@ -25,12 +26,14 @@
 		try {
 			// 👇 get logged-in user from your auth store
 			const user = get(authUser);
+			console.log(authUser)
 
 			const res = await fetch('/api/feedback', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					feedback: feedbackText,
+					title: feedbackTitle,
+					message: feedbackText,
 					user_id: user?.id ?? null
 				})
 			});
@@ -105,15 +108,20 @@
 					Close
 				</button>
 			</div>
+			<div class="flex-1 flex-col space-y-2">
+				<input type="text" placeholder="Enter Topic ..." class="w-full rounded-md bg-transparent p-2 text-sm
+				   text-gray-800 placeholder-gray-500
+				   dark:text-gray-100 dark:placeholder-gray-400" bind:value= {feedbackTitle}>
 
-			<textarea
-				bind:value={feedbackText}
-				rows="3"
-				class="w-full rounded-md bg-transparent p-2 text-sm
-               text-gray-800 placeholder-gray-500
-               dark:text-gray-100 dark:placeholder-gray-400"
-				placeholder="Write your feedback..."
-			></textarea>
+				<textarea
+					bind:value={feedbackText}
+					rows="3"
+					class="w-full rounded-md bg-transparent p-2 text-sm
+				   text-gray-800 placeholder-gray-500
+				   dark:text-gray-100 dark:placeholder-gray-400"
+					placeholder="Write your feedback..."
+				></textarea>
+			</div>
 
 			<div class="mt-3 flex items-center justify-end">
 				{#if loading}
