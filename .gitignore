@@ -24,3 +24,5 @@ vite.config.ts.timestamp-*
 
 # remove the backend since it is serverless now
 /backend
+
+/scripts
