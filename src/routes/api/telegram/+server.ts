@@ -1,10 +1,17 @@
 // src/routes/api/telegram/+server.ts
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { Telegraf } from 'telegraf';
-import 'dotenv/config'
+import { asyncHandler } from '../../../lib/server/errors';
+import { logger } from '../../../lib/server/logger';
 
-// 1. Initialize the bot instance
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || "");
+// Initialize the bot instance
+const botToken = import.meta.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '';
+
+if (!botToken) {
+	logger.warn('TELEGRAM_BOT_TOKEN not configured');
+}
+
+const bot = new Telegraf(botToken);
 
 // --- Bot Command/Event Registration ---
 // Handles the /start command
@@ -33,24 +40,15 @@ bot.start((ctx) => {
 
 // Add more bot handlers here (e.g., bot.on('text', ...), bot.command('help', ...))
 
-// --- SvelteKit POST Handler ---
+// SvelteKit POST Handler
 // This function executes every time Telegram sends an update to your webhook URL.
-export const POST: RequestHandler = async ({ request }) => {
-	try {
-		// Telegraf provides a webhook-compatible function for handling the raw HTTP request body.
-		// We process the incoming JSON payload (the 'update' object from Telegram).
-		const update = await request.json();
-		await bot.handleUpdate(update);
+export const POST: RequestHandler = asyncHandler(async ({ request }) => {
+	// Telegraf provides a webhook-compatible function for handling the raw HTTP request body.
+	const update = await request.json();
+	await bot.handleUpdate(update);
 
-		// IMPORTANT: Return a 200 OK status immediately to Telegram.
-		// The actual reply (e.g., from bot.start) is handled asynchronously by Telegraf
-		// making a separate API call back to Telegram.
-		return json({ success: true }, { status: 200 });
-
-	} catch (error) {
-		console.error('Telegram Webhook processing failed:', error);
-		// Log the error but still return 200 to Telegram to prevent retry loops,
-		// or return 500 if you want Telegram to retry (less common).
-		return json({ error: 'Failed to process update' }, { status: 500 });
-	}
-};
+	// IMPORTANT: Return a 200 OK status immediately to Telegram.
+	// The actual reply (e.g., from bot.start) is handled asynchronously by Telegraf
+	// making a separate API call back to Telegram.
+	return json({ success: true }, { status: 200 });
+});

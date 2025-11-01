@@ -1,61 +1,55 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { getSupabaseClient } from '../../../config/supabase/client';
+import { asyncHandler } from '../../../lib/server/errors';
+import { validateBody, feedbackSchema } from '../../../lib/server/validation';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../lib/server/rateLimit';
+import { ApiError } from '../../../lib/server/errors';
 
 const supabase = getSupabaseClient();
 
-export const POST: RequestHandler = async ({ request }) => {
-	try {
-		const { title, message, user_id } = await request.json();
+const feedbackLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	maxRequests: 5 // Limit feedback submissions
+});
 
-		// Basic validation
-		if (!title || typeof title !== 'string' || !title.trim()) {
-			return new Response(JSON.stringify({ ok: false, error: 'Title is required' }), {
-				status: 400
-			});
-		}
+const handler = asyncHandler(async ({ request }) => {
+	const { title, message, user_id } = await validateBody(feedbackSchema, request);
 
-		if (!message || typeof message !== 'string' || !message.trim()) {
-			return new Response(JSON.stringify({ ok: false, error: 'Message is required' }), {
-				status: 400
-			});
-		}
+	// Insert into the `feedback` table (new thread)
+	const { data: feedbackData, error: feedbackError } = await supabase
+		.from('feedback')
+		.insert({
+			user_id,
+			title
+		})
+		.select('id')
+		.single();
 
-		// Step 1️⃣: Insert into the `feedback` table (new thread)
-		const { data: feedbackData, error: feedbackError } = await supabase
-			.from('feedback')
-			.insert({
-				user_id,
-				title
-			})
-			.select('id')
-			.single();
-
-		if (feedbackError) throw feedbackError;
-		const feedbackId = feedbackData.id;
-
-		// Step 2️⃣: Insert initial message into `feedback_messages`
-		const { error: messageError } = await supabase.from('feedback_messages').insert({
-			feedback_id: feedbackId,
-			sender_type: 'user',
-			message
-		});
-
-		if (messageError) throw messageError;
-
-		// Step 3️⃣: Success response
-		return new Response(
-			JSON.stringify({
-				ok: true,
-				feedback_id: feedbackId,
-				message: 'Feedback recorded successfully'
-			}),
-			{ headers: { 'Content-Type': 'application/json' } }
-		);
-	} catch (err: any) {
-		console.error('Feedback submission error:', err);
-		return new Response(
-			JSON.stringify({ ok: false, error: err.message || 'Internal Server Error' }),
-			{ status: 500 }
-		);
+	if (feedbackError) {
+		throw new ApiError(500, 'Failed to create feedback', 'DATABASE_ERROR', feedbackError);
 	}
-};
+
+	const feedbackId = feedbackData.id;
+
+	// Insert initial message into `feedback_messages`
+	const { error: messageError } = await supabase.from('feedback_messages').insert({
+		feedback_id: feedbackId,
+		sender_type: 'user',
+		message
+	});
+
+	if (messageError) {
+		throw new ApiError(500, 'Failed to save feedback message', 'DATABASE_ERROR', messageError);
+	}
+
+	return new Response(
+		JSON.stringify({
+			ok: true,
+			feedback_id: feedbackId,
+			message: 'Feedback recorded successfully'
+		}),
+		{ headers: { 'Content-Type': 'application/json' } }
+	);
+});
+
+export const POST: RequestHandler = withRateLimit(feedbackLimiter, handler);

@@ -6,7 +6,10 @@ export const getAllUsers = async () => {
         const users = await supabase.from('users').select('*');
         return users;
     } catch (error) {
-        console.error('Failed to fetch users:', error);
+        // Log error in development only
+        if (import.meta.env.DEV) {
+            console.error('Failed to fetch users:', error);
+        }
         throw new Error('Failed to fetch users');
     }
 };

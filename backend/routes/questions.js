@@ -1,17 +1,21 @@
-import express from 'express'
+import express from 'express';
 import { getExamQuestions } from '../../src/api/controllers/questions.js';
+import { asyncHandler } from '../utils/errors.js';
+import { validateQuery, examIdQuerySchema } from '../utils/validation.js';
+import { examLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-router.get('/',async(req,res)=>{
-    const examId = req.query.examId;
-    let questions;
-    try {
-        questions = await getExamQuestions(examId);
-    } catch (error) {
-        console.error("error fetching questions:",error)
-        return res.status(500).json({err:error})
-    }
-    return res.json(questions);
-})
+// Apply stricter rate limiting for exam-related endpoints
+router.use(examLimiter);
+
+router.get('/', 
+	validateQuery(examIdQuerySchema),
+	asyncHandler(async (req, res) => {
+		const { examId } = req.query;
+		const questions = await getExamQuestions(examId);
+		res.json({ ok: true, data: questions });
+	})
+);
+
 export default router;

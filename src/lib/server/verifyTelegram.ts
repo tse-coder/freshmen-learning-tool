@@ -1,14 +1,25 @@
+/**
+ * Telegram Web App data verification for serverless functions
+ */
 import crypto from 'crypto';
-import { logger } from './logger.js';
-import { ApiError } from './errors.js';
+import { logger } from './logger';
+import { ApiError } from './errors';
 
-const botToken = process.env.TELEGRAM_BOT_TOKEN;
+const botToken = import.meta.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 
 if (!botToken) {
 	logger.warn('TELEGRAM_BOT_TOKEN not set. Telegram verification will fail.');
 }
 
-export const verifyTelegramInitData = (initData) => {
+export function verifyTelegramInitData(initData: string): {
+	id: number;
+	first_name?: string;
+	last_name?: string;
+	username?: string;
+	language_code?: string;
+	photo_url?: string;
+	is_premium?: boolean;
+} | null {
 	if (!botToken) {
 		throw new ApiError(500, 'Telegram bot token not configured', 'CONFIGURATION_ERROR');
 	}
@@ -19,8 +30,10 @@ export const verifyTelegramInitData = (initData) => {
 
 	try {
 		const params = new URLSearchParams(initData);
-		const data = {};
-		params.forEach((v, k) => (data[k] = v));
+		const data: Record<string, string> = {};
+		params.forEach((v, k) => {
+			data[k] = v;
+		});
 
 		const receivedHash = data.hash;
 		if (!receivedHash) {
@@ -52,4 +65,5 @@ export const verifyTelegramInitData = (initData) => {
 		logger.error('Error verifying Telegram data:', error);
 		throw new ApiError(400, 'Invalid Telegram data format', 'INVALID_INPUT');
 	}
-};
+}
+

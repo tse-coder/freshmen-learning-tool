@@ -26,7 +26,6 @@
 		try {
 			// 👇 get logged-in user from your auth store
 			const user = get(authUser);
-			console.log(authUser)
 
 			const res = await fetch('/api/feedback', {
 				method: 'POST',

@@ -1,12 +1,18 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { getAllExams } from '../../../../api/controllers/exams';
-import { jsonResponse } from '../../../../utils/jsonify';
+import { asyncHandler } from '../../../../lib/server/errors';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../../lib/server/rateLimit';
 
-export const GET: RequestHandler = async ({ request }) => {
-	try {
-		const exams = await getAllExams();
-		return jsonResponse(exams);
-	} catch (error) {
-		return jsonResponse({ 'couldnt get all exams': error });
-	}
-};
+const examLimiter = rateLimit(RATE_LIMITS.EXAMS);
+
+const handler = asyncHandler(async () => {
+	const exams = await getAllExams();
+	return new Response(
+		JSON.stringify({ ok: true, data: exams }),
+		{
+			headers: { 'Content-Type': 'application/json' }
+		}
+	);
+});
+
+export const GET: RequestHandler = withRateLimit(examLimiter, handler);

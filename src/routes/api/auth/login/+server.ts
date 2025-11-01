@@ -1,52 +1,53 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { verifyTelegramInitData } from '../../../../../backend/utils/verifyTelegram';
+import { verifyTelegramInitData } from '../../../../lib/server/verifyTelegram';
 import { getSupabaseClient } from '../../../../config/supabase/client';
+import { asyncHandler } from '../../../../lib/server/errors';
+import { validateBody, telegramInitDataSchema } from '../../../../lib/server/validation';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../../lib/server/rateLimit';
+import { z } from 'zod';
+import { ApiError } from '../../../../lib/server/errors';
 
-// Initialize Supabase client with service key (keep it server-side only)
 const supabase = getSupabaseClient();
 
-export const POST: RequestHandler = async ({ request }) => {
-	try {
-		const { initData } = await request.json();
+const loginBodySchema = z.object({
+	initData: telegramInitDataSchema
+});
 
-		// 1. Verify Telegram init data
-		const user = verifyTelegramInitData(initData);
+const authLimiter = rateLimit(RATE_LIMITS.AUTH);
 
-		if (!user) {
-			return new Response(JSON.stringify({ ok: false, error: 'Invalid Telegram data' }), {
-				status: 403
-			});
-		}
+const handler = asyncHandler(async ({ request }) => {
+	const { initData } = await validateBody(loginBodySchema, request);
 
-		// 2. Upsert user into Supabase
-		const { data, error } = await supabase
-			.from('users')
-			.upsert({
-				id: user.id,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				username: user.username,
-				language_code: user.language_code,
-				photo_url: user.photo_url,
-				last_seen: new Date().toISOString(),
-				data: user // full JSON user object for future flexibility
-			})
-			.select()
-			.single();
+	// Verify Telegram init data
+	const user = verifyTelegramInitData(initData);
 
-		if (error) {
-			console.error('Supabase upsert error:', error);
-			return new Response(JSON.stringify({ ok: false, error: 'Database error' }), {
-				status: 500
-			});
-		}
-
-		// 3. Return user (from DB for consistency)
-		return new Response(JSON.stringify({ ok: true, user: data }), {
-			headers: { 'Content-Type': 'application/json' }
-		});
-	} catch (err) {
-		console.error('Login error:', err);
-		return new Response(JSON.stringify({ ok: false, error: 'Bad request' }), { status: 400 });
+	if (!user) {
+		throw new ApiError(403, 'Invalid Telegram data', 'UNAUTHORIZED');
 	}
-};
+
+	// Upsert user into Supabase
+	const { data, error } = await supabase
+		.from('users')
+		.upsert({
+			id: user.id.toString(),
+			first_name: user.first_name,
+			last_name: user.last_name,
+			username: user.username,
+			language_code: user.language_code,
+			photo_url: user.photo_url,
+			last_seen: new Date().toISOString(),
+			data: user
+		})
+		.select()
+		.single();
+
+	if (error) {
+		throw new ApiError(500, 'Database error', 'DATABASE_ERROR');
+	}
+
+	return new Response(JSON.stringify({ ok: true, user: data }), {
+		headers: { 'Content-Type': 'application/json' }
+	});
+});
+
+export const POST: RequestHandler = withRateLimit(authLimiter, handler);

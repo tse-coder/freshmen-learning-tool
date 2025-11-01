@@ -1,16 +1,22 @@
-import { jsonResponse } from '../../../utils/jsonify.js';
+import type { RequestHandler } from '@sveltejs/kit';
 import { getVideosByCourseId } from '../../../api/controllers/videos';
+import { asyncHandler } from '../../../lib/server/errors';
+import { validateSearchParams, courseIdQuerySchema } from '../../../lib/server/validation';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../lib/server/rateLimit';
 
-export const GET = async ({ url }) => {
-	const courseId = url.searchParams.get('courseId');
+const generalLimiter = rateLimit(RATE_LIMITS.GENERAL);
 
-	if (!courseId) {
-		return jsonResponse({ error: 'courseId is required' });
-	}
-	try {
-		const videos = await getVideosByCourseId(courseId);
-		return jsonResponse(videos);
-	} catch (error) {
-		return jsonResponse({ error: 'failed to fetch videos' });
-	}
-};
+const handler = asyncHandler(async ({ url }) => {
+	const searchParams = url.searchParams;
+	const { courseId } = validateSearchParams(courseIdQuerySchema, searchParams);
+
+	const videos = await getVideosByCourseId(courseId);
+	return new Response(
+		JSON.stringify({ ok: true, data: videos }),
+		{
+			headers: { 'Content-Type': 'application/json' }
+		}
+	);
+});
+
+export const GET: RequestHandler = withRateLimit(generalLimiter, handler);

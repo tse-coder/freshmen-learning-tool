@@ -26,28 +26,23 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-export const GET: RequestHandler = async ({ request }) => {
-  const corsHeaders = getCorsHeaders(request.headers.get('origin'));
+import { asyncHandler } from '../../../lib/server/errors';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../lib/server/rateLimit';
 
-  try {
-    const users = await getAllUsers();
-    return new Response(JSON.stringify(users), {
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch users' }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders,
-      },
-    });
-  }
-};
+const generalLimiter = rateLimit(RATE_LIMITS.GENERAL);
+
+const handler = asyncHandler(async ({ request }) => {
+  const corsHeaders = getCorsHeaders(request.headers.get('origin'));
+  const users = await getAllUsers();
+  return new Response(JSON.stringify({ ok: true, data: users }), {
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders,
+    },
+  });
+});
+
+export const GET: RequestHandler = withRateLimit(generalLimiter, handler);
 
 // Handle preflight OPTIONS request
 export const OPTIONS: RequestHandler = async ({ request }) => {

@@ -1,24 +1,52 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { verifyTelegramInitData } from '../../../../../backend/utils/verifyTelegram';
+import { verifyTelegramInitData } from '../../../../lib/server/verifyTelegram';
+import { getSupabaseClient } from '../../../../config/supabase/client';
+import { asyncHandler } from '../../../../lib/server/errors';
+import { validateBody, telegramInitDataSchema } from '../../../../lib/server/validation';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../../lib/server/rateLimit';
+import { z } from 'zod';
+import { ApiError } from '../../../../lib/server/errors';
 
-// POST /api/auth/signup
-export const POST: RequestHandler = async ({ request }) => {
-	try {
-		const { initData } = await request.json();
+const supabase = getSupabaseClient();
 
-		const user = verifyTelegramInitData(initData);
+const signupBodySchema = z.object({
+	initData: telegramInitDataSchema
+});
 
-		if (!user) {
-			return new Response(JSON.stringify({ ok: false, error: 'Invalid Telegram data' }), {
-				status: 403
-			});
-		}
+const authLimiter = rateLimit(RATE_LIMITS.AUTH);
 
-		// TODO: Save user to DB if not exists, return session/JWT
-		return new Response(JSON.stringify({ ok: true, user }), {
-			headers: { 'Content-Type': 'application/json' }
-		});
-	} catch (err) {
-		return new Response(JSON.stringify({ ok: false, error: 'Bad request' }), { status: 400 });
+const handler = asyncHandler(async ({ request }) => {
+	const { initData } = await validateBody(signupBodySchema, request);
+
+	const user = verifyTelegramInitData(initData);
+
+	if (!user) {
+		throw new ApiError(403, 'Invalid Telegram data', 'UNAUTHORIZED');
 	}
-};
+
+	// Upsert user into Supabase
+	const { data, error } = await supabase
+		.from('users')
+		.upsert({
+			id: user.id.toString(),
+			first_name: user.first_name,
+			last_name: user.last_name,
+			username: user.username,
+			language_code: user.language_code,
+			photo_url: user.photo_url,
+			last_seen: new Date().toISOString(),
+			data: user
+		})
+		.select()
+		.single();
+
+	if (error) {
+		throw new ApiError(500, 'Database error', 'DATABASE_ERROR');
+	}
+
+	return new Response(JSON.stringify({ ok: true, user: data }), {
+		headers: { 'Content-Type': 'application/json' }
+	});
+});
+
+export const POST: RequestHandler = withRateLimit(authLimiter, handler);

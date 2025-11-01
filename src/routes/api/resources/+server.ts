@@ -1,21 +1,28 @@
+import type { RequestHandler } from '@sveltejs/kit';
 import {
 	getAllResourcesByCourseId,
 	getResourcesByCourseIdandType
 } from '../../../api/controllers/resources.js';
-import { jsonResponse } from '../../../utils/jsonify.js';
+import { asyncHandler } from '../../../lib/server/errors';
+import { validateSearchParams, resourceQuerySchema } from '../../../lib/server/validation';
+import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../lib/server/rateLimit';
 
-export const GET = async ({ url }) => {
-	const type = url.searchParams.get('type') || '';
-	const courseId = url.searchParams.get('courseId') || '';
-	let data;
-	try {
-		if (!type) {
-			data = await getAllResourcesByCourseId(courseId);
-		} else {
-			data = await getResourcesByCourseIdandType(courseId, type);
+const generalLimiter = rateLimit(RATE_LIMITS.GENERAL);
+
+const handler = asyncHandler(async ({ url }) => {
+	const searchParams = url.searchParams;
+	const { courseId, type } = validateSearchParams(resourceQuerySchema, searchParams);
+
+	const data = type
+		? await getResourcesByCourseIdandType(courseId, type)
+		: await getAllResourcesByCourseId(courseId);
+
+	return new Response(
+		JSON.stringify({ ok: true, data }),
+		{
+			headers: { 'Content-Type': 'application/json' }
 		}
-		return jsonResponse(data);
-	} catch (error) {
-		return jsonResponse({ error: 'couldnt fetch resourses' });
-	}
-};
+	);
+});
+
+export const GET: RequestHandler = withRateLimit(generalLimiter, handler);
