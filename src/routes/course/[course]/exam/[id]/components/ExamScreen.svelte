@@ -2,79 +2,57 @@
 	import Question from './Question.svelte';
 	import TimerQuit from './TimerQuit.svelte';
 	import QuestionNav from './QuestionNav.svelte';
-	import ExamFinished from './ExamFinished.svelte';
+	import { createEventDispatcher } from 'svelte';
 
-	export let data: {
-		exam: { id: string; title: string; description: string; duration: number };
-		examQuestions: Array<{
-			id: string;
-			question: string;
-			type: string;
-			options?: string[];
-			answer: string;
-		}>;
-	};
-
+	export let data;
 	export let currentIndex = 0;
 	export let answers: Record<string, string> = {};
-	export let finished = false;
+	export let timeLeft: number;
+
+	const dispatch = createEventDispatcher();
 
 	$: isLastQuestion = currentIndex === data.examQuestions.length - 1;
 
-	// Answer handler
 	function handleAnswerChange(id: string, value: string) {
-		answers = { ...answers, [id]: value };
+		dispatch('answerChange', { id, value });
 	}
 
-	// Navigation handlers
 	function handlePrev() {
-		if (currentIndex > 0) currentIndex--;
+		dispatch('prev');
 	}
 
 	function handleNext() {
-		if (currentIndex < data.examQuestions.length - 1) currentIndex++;
+		dispatch('next');
 	}
 
 	function handleFinish() {
-		finished = true;
+		dispatch('finish');
 	}
 
 	function handleQuit() {
-		finished = true;
+		dispatch('quit');
 	}
-
-	// Timer in seconds
-	const timeLeft = data.exam.duration * 60;
 </script>
 
-{#if !finished}
-	<div class="flex max-w-2xl flex-col gap-4 p-4">
-		<!-- Timer + Quit -->
-		<TimerQuit timeLeft={data.exam.duration * 60} on:quit={handleQuit} />
+<div class="w-full max-w-2xl flex flex-col gap-6 p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/30 dark:border-gray-700/40">
+	<TimerQuit {timeLeft} on:quit={handleQuit} />
 
-		<!-- Question Counter -->
-		<div class="text-gray-700 dark:text-gray-300">
-			Question {currentIndex + 1} / {data.examQuestions.length}
-		</div>
-
-		<!-- Question -->
-		<Question
-			{currentIndex}
-			{answers}
-			questions={data.examQuestions}
-			onAnswerChange={handleAnswerChange}
-		/>
-
-		<!-- Question Navigation -->
-		<QuestionNav
-			{currentIndex}
-			{isLastQuestion}
-			on:prev={handlePrev}
-			on:next={handleNext}
-			on:finish={handleFinish}
-		/>
+	<div class="text-gray-700 dark:text-gray-300 text-sm font-medium">
+		Question {currentIndex + 1} of {data.examQuestions.length}
 	</div>
-{:else}
-	<!-- Finished Exam Overview -->
-	<ExamFinished {data} {answers} />
-{/if}
+
+	<Question
+		{currentIndex}
+		{answers}
+		questions={data.examQuestions}
+		on:answerChange={(e) => handleAnswerChange(e.detail.id, e.detail.value)}
+	/>
+
+	<QuestionNav
+		{currentIndex}
+		{isLastQuestion}
+		on:prev={handlePrev}
+		on:next={handleNext}
+		on:finish={handleFinish}
+	/>
+</div>

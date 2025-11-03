@@ -53,6 +53,7 @@
 			{data}
 			{currentIndex}
 			{answers}
+			timeLeft={timeLeft}
 			on:answerChange={(e) => handleAnswerChange(e.detail.id, e.detail.value)}
 			on:next={nextQuestion}
 			on:prev={prevQuestion}
