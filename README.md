@@ -302,6 +302,7 @@ Ensure all environment variables are set in your deployment platform:
 - `SUPABASE_ANON_KEY`
 - `TELEGRAM_BOT_TOKEN`
 - `GEMINI_API_KEY` (if using AI features)
+- `ADMIN_SECRET` (required for admin dashboard access)
 
 ## 📝 Code Style
 

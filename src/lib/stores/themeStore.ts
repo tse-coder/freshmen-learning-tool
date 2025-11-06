@@ -9,11 +9,22 @@ function getInitialTheme(): 'light' | 'dark' {
     return 'light';
 }
 
-export const theme = writable<'light' | 'dark'>(getInitialTheme());
+// Ensure initial application before any components mount
+const initialTheme = getInitialTheme();
+if (typeof window !== 'undefined') {
+    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+}
+
+export const theme = writable<'light' | 'dark'>(initialTheme);
 
 theme.subscribe((value) => {
     if (typeof window !== 'undefined') {
-        document.documentElement.classList.toggle('dark', value === 'dark');
+        const html = document.documentElement;
+        if (value === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
         localStorage.setItem('theme', value);
     }
 });

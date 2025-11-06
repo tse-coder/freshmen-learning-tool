@@ -9,10 +9,7 @@
 
 	let user: any = null;
 
-	// Apply Tailwind dark mode
-	$: if (typeof window !== 'undefined') {
-		document.documentElement.classList.toggle('dark', $theme === 'dark');
-	}
+	// Theme is applied centrally in themeStore subscription
 
 	function initTelegram() {
 		const tg = window.Telegram?.WebApp;
@@ -56,13 +53,13 @@
 	<div
 		class="bg-gradient-pattern mask-radial-fade pointer-events-none fixed inset-0 z-0 h-full"
 	></div>
-	{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/')}
+	{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/') && !$page.url.pathname.startsWith('/admin')}
 		<TopPanel title={$pageTitle} />
 	{/if}
 
 	<div class="relative z-10">
 		<slot />
-		{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/')}
+		{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/') && !$page.url.pathname.startsWith('/admin')}
 			<Feedback />
 		{/if}
 	</div>

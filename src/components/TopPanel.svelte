@@ -40,7 +40,7 @@ function goBack() {
 	<span class="truncate sm:text-lg font-semibold">{title}</span>
 
 	<div class="ml-auto flex items-center gap-2">
-		<!-- <ThemeToggler /> -->
+		<ThemeToggler />
 		<ProfileButton />
 	</div>
 </div>
