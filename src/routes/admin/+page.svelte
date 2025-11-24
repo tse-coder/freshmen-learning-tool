@@ -315,6 +315,7 @@
                 <th class="px-2 py-2">Username</th>
                 <th class="px-2 py-2">Language</th>
                 <th class="px-2 py-2">Last seen</th>
+                <th class="px-2 py-2">total Visits</th>
               </tr>
             </thead>
             <tbody class="text-gray-900 dark:text-gray-200">
@@ -341,6 +342,7 @@
                   <td class="px-2 py-2">@{u.username}</td>
                   <td class="px-2 py-2">{u.language_code || '-'}</td>
                   <td class="px-2 py-2">{u.last_seen ? new Date(u.last_seen).toLocaleString() : '-'}</td>
+                  <td class="px-2 py-2">{u.visits? u.visits: 0}</td>
                 </tr>
               {/each}
             </tbody>

@@ -36,7 +36,8 @@ const handler = asyncHandler(async ({ request }) => {
 			language_code: user.language_code,
 			photo_url: user.photo_url,
 			last_seen: new Date().toISOString(),
-			data: user
+			data: user,
+			visits: user.visits? user.visits+1 : 1,
 		})
 		.select()
 		.single();

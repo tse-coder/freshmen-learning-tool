@@ -5,10 +5,10 @@ import type { AuthUser, AuthResponse } from '../../types/auth';
 export const isAuthenticated: Writable<boolean> = writable(false);
 export const authUser: Writable<AuthUser | null> = writable(null);
 
-export function loginDemo(user: { username?: string } = {}) {
-	authUser.set(user);
-	isAuthenticated.set(true);
-}
+// export function loginDemo(user: { username?: string } = {}) {
+// 	authUser.set(user);
+// 	isAuthenticated.set(true);
+// }
 
 export function logout(): void {
 	// Clear local auth state

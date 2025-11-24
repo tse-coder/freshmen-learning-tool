@@ -19,6 +19,7 @@ export function verifyTelegramInitData(initData: string): {
 	language_code?: string;
 	photo_url?: string;
 	is_premium?: boolean;
+	visits?: number;
 } | null {
 	if (!botToken) {
 		throw new ApiError(500, 'Telegram bot token not configured', 'CONFIGURATION_ERROR');
