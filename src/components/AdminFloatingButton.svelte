@@ -1,12 +1,26 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { authUser } from '../lib/stores/auth';
   import { Shield } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
 
   const ADMIN_ID = '7141369745';
+  let tgUser: any = null;
 
-  $: isAdmin = $authUser?.id?.toString() === ADMIN_ID;
+  onMount(() => {
+    // Direct check from Telegram WebApp
+    tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    console.log('[AdminButton] Debug:', { 
+        storeId: $authUser?.id, 
+        tgId: tgUser?.id, 
+        adminId: ADMIN_ID,
+        match: ($authUser?.id?.toString() === ADMIN_ID) || (tgUser?.id?.toString() === ADMIN_ID)
+    });
+  });
+
+  $: currentId = $authUser?.id?.toString() || tgUser?.id?.toString();
+  $: isAdmin = currentId === ADMIN_ID;
   $: showButton = isAdmin && !$page.url.pathname.startsWith('/admin');
 
   function goToAdmin() {
