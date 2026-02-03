@@ -6,6 +6,7 @@ import { validateBody, telegramInitDataSchema } from '../../../../lib/server/val
 import { rateLimit, RATE_LIMITS, withRateLimit } from '../../../../lib/server/rateLimit';
 import { z } from 'zod';
 import { ApiError } from '../../../../lib/server/errors';
+import { logUserActivity } from '../../../../lib/server/activityLogger';
 
 const supabase = getSupabaseClient();
 
@@ -37,7 +38,7 @@ const handler = asyncHandler(async ({ request }) => {
 			photo_url: user.photo_url,
 			last_seen: new Date().toISOString(),
 			data: user,
-			visits: user.visits? user.visits+1 : 1,
+			visits: user.visits ? user.visits + 1 : 1,
 		})
 		.select()
 		.single();
@@ -46,9 +47,14 @@ const handler = asyncHandler(async ({ request }) => {
 		throw new ApiError(500, 'Database error', 'DATABASE_ERROR');
 	}
 
+	// Log user activity (non-blocking - errors won't affect login)
+	logUserActivity(user.id.toString(), '/login', request.headers.get('user-agent') || undefined)
+		.catch((err) => console.error('[Login] Failed to log activity:', err));
+
 	return new Response(JSON.stringify({ ok: true, user: data }), {
 		headers: { 'Content-Type': 'application/json' }
 	});
 });
 
 export const POST: RequestHandler = withRateLimit(authLimiter, handler);
+

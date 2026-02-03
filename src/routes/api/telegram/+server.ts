@@ -1,17 +1,10 @@
-// src/routes/api/telegram/+server.ts
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { Telegraf } from 'telegraf';
+import { bot } from '../../../lib/server/telegram';
 import { asyncHandler } from '../../../lib/server/errors';
 import { logger } from '../../../lib/server/logger';
 
-// Initialize the bot instance
-const botToken = import.meta.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '';
-
-if (!botToken) {
-	logger.warn('TELEGRAM_BOT_TOKEN not configured');
-}
-
-const bot = new Telegraf(botToken);
+// Bot instance is now imported from shared server/telegram.ts
+// const bot = new Telegraf(botToken); removed
 
 // --- Bot Command/Event Registration ---
 // Handles the /start command

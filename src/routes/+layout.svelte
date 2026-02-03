@@ -6,6 +6,7 @@
 	import { pageTitle } from '../lib/stores/uiStore';
 	import { theme } from '../lib/stores/themeStore';
 	import Feedback from '../components/Feedback.svelte';
+	import AdminFloatingButton from '../components/AdminFloatingButton.svelte';
 
 	let user: any = null;
 
@@ -62,5 +63,6 @@
 		{#if $page.url.pathname !== '/' && !$page.url.pathname.includes('exam/') && !$page.url.pathname.startsWith('/admin')}
 			<Feedback />
 		{/if}
+		<AdminFloatingButton />
 	</div>
 </div>
